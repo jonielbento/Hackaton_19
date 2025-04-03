@@ -204,13 +204,7 @@ else
     {
         try
         {
-            var atualizacaoDTO = new ConsultaAtualizacaoDTO
-            {
-                Id = consultaId,
-                Status = StatusConsulta.Realizada
-            };
-
-            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaId}/atualizar-status", atualizacaoDTO);
+            var response = await Http.PutAsync($"api/consultas/{consultaId}/concluir", null);
             if (response.IsSuccessStatusCode)
             {
                 await CarregarConsulta();

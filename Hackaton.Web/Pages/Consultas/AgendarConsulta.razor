@@ -1,278 +1,171 @@
-@page "/agendar-consulta/{PacienteId:int}"
+@page "/agendar-consulta/{MedicoId:int}"
 @using Hackaton.Application.DTOs
 @using Hackaton.Application.Interfaces
-@using Hackaton.Domain.Entities
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Agendar Consulta</PageTitle>
 
-<h3>Agendar Consulta</h3>
+<div class="container">
+    <h3 class="mb-4">Agendar Consulta</h3>
 
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @errorMessage
-        <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty" aria-label="Close"></button>
-    </div>
-}
-
-<div class="row">
-    <div class="col-md-6">
+    @if (medico != null)
+    {
         <div class="card mb-4">
             <div class="card-header">
-                <h5>Selecione um Médico</h5>
+                <h5>Médico Selecionado</h5>
             </div>
             <div class="card-body">
-                @if (medicos == null)
-                {
-                    <p><em>Carregando médicos...</em></p>
-                }
-                else if (!medicos.Any())
-                {
-                    <p>Nenhum médico disponível no momento.</p>
-                }
-                else
-                {
-                    <div class="mb-3">
-                        <label for="especialidade" class="form-label">Filtrar por Especialidade:</label>
-                        <select id="especialidade" class="form-select" @bind="especialidadeSelecionada">
-                            <option value="">Todas as Especialidades</option>
-                            @foreach (var especialidade in especialidades)
-                            {
-                                <option value="@especialidade">@especialidade</option>
-                            }
-                        </select>
-                    </div>
-                    
-                    <div class="list-group">
-                        @foreach (var medico in medicosFiltrados)
-                        {
-                            <button type="button" 
-                                    class="list-group-item list-group-item-action @(medicoSelecionado?.Id == medico.Id ? "active" : "")" 
-                                    @onclick="() => SelecionarMedico(medico)">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">Dr(a). @medico.Nome</h5>
-                                    <small>@medico.ValorConsulta.ToString("C")</small>
-                                </div>
-                                <p class="mb-1">@medico.Especialidade</p>
-                                <small>CRM: @medico.CRM</small>
-                            </button>
-                        }
-                    </div>
-                }
+                <h6>@medico.Nome</h6>
+                <p>Especialidade: @medico.Especialidade</p>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>Selecione um Horário</h5>
-            </div>
-            <div class="card-body">
-                @if (medicoSelecionado == null)
-                {
-                    <p>Selecione um médico para ver os horários disponíveis.</p>
-                }
-                else if (agendas == null)
-                {
-                    <p><em>Carregando horários...</em></p>
-                }
-                else if (!agendas.Any())
-                {
-                    <p>Não há horários disponíveis para este médico.</p>
-                }
-                else
-                {
-                    <div class="mb-3">
-                        <label for="dataFiltro" class="form-label">Filtrar por Data:</label>
-                        <input type="date" id="dataFiltro" class="form-control" @bind="dataFiltro" />
-                    </div>
-                    
-                    <div class="list-group">
-                        @foreach (var agenda in agendasFiltradas)
-                        {
-                            <button type="button" 
-                                    class="list-group-item list-group-item-action @(agendaSelecionada?.Id == agenda.Id ? "active" : "")" 
-                                    @onclick="() => SelecionarAgenda(agenda)">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">@agenda.DataHoraInicio.ToString("dd/MM/yyyy")</h5>
-                                    <small>@agenda.DataHoraInicio.ToString("HH:mm") - @agenda.DataHoraFim.ToString("HH:mm")</small>
-                                </div>
-                            </button>
-                        }
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>
+    }
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5>Resumo da Consulta</h5>
+    <div class="card">
+        <div class="card-header">
+            <h5>Selecione um Horário Disponível</h5>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
+
+            <div class="mb-4">
+                <label class="form-label">Data da Consulta</label>
+                <input type="date" class="form-control" @bind="dataSelecionada" @bind:event="oninput" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             </div>
-            <div class="card-body">
-                @if (medicoSelecionado == null || agendaSelecionada == null)
-                {
-                    <p>Selecione um médico e um horário para agendar sua consulta.</p>
-                }
-                else
-                {
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Médico:</h6>
-                            <p>Dr(a). @medicoSelecionado.Nome</p>
-                            <p>Especialidade: @medicoSelecionado.Especialidade</p>
-                            <p>CRM: @medicoSelecionado.CRM</p>
+
+            @if (agendasDisponiveis != null && agendasDisponiveis.Any())
+            {
+                <div class="row">
+                    @foreach (var slot in GerarSlotsDeHorarios(agendasDisponiveis))
+                    {
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">@slot.HoraInicio.ToString("HH:mm")</h5>
+                                    <p class="card-text text-muted">Duração: 30 minutos</p>
+                                    <button class="btn btn-primary" @onclick="() => SelecionarHorario(slot)">
+                                        Selecionar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Horário:</h6>
-                            <p>Data: @agendaSelecionada.DataHoraInicio.ToString("dd/MM/yyyy")</p>
-                            <p>Horário: @agendaSelecionada.DataHoraInicio.ToString("HH:mm") - @agendaSelecionada.DataHoraFim.ToString("HH:mm")</p>
-                            <p>Valor: @medicoSelecionado.ValorConsulta.ToString("C")</p>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-primary" @onclick="ConfirmarAgendamento">Confirmar Agendamento</button>
-                        <button class="btn btn-secondary" @onclick="VoltarParaConsultas">Cancelar</button>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Não há horários disponíveis para a data selecionada.
+                </div>
+            }
         </div>
     </div>
 </div>
 
 @code {
     [Parameter]
-    public int PacienteId { get; set; }
+    public int MedicoId { get; set; }
 
-    private List<MedicoDTO> medicos;
-    private List<AgendaDTO> agendas;
-    private MedicoDTO medicoSelecionado;
-    private AgendaDTO agendaSelecionada;
-    private string especialidadeSelecionada = "";
-    private DateTime? dataFiltro = DateTime.Today;
-    private string errorMessage = string.Empty;
-
-    private List<string> especialidades => medicos?.Select(m => m.Especialidade).Distinct().ToList() ?? new List<string>();
-
-    private List<MedicoDTO> medicosFiltrados => medicos?
-        .Where(m => string.IsNullOrEmpty(especialidadeSelecionada) || m.Especialidade == especialidadeSelecionada)
-        .ToList() ?? new List<MedicoDTO>();
-
-    private List<AgendaDTO> agendasFiltradas => agendas?
-        .Where(a => !dataFiltro.HasValue || a.DataHoraInicio.Date == dataFiltro.Value.Date)
-        .OrderBy(a => a.DataHoraInicio)
-        .ToList() ?? new List<AgendaDTO>();
+    private MedicoDTO medico;
+    private List<AgendaDTO> agendasDisponiveis;
+    private DateTime dataSelecionada = DateTime.Today;
+    private string errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        await CarregarMedicos();
+        await CarregarMedico();
+        await CarregarAgendas();
     }
 
-    private void VoltarParaConsultas()
-    {
-        NavigationManager.NavigateTo($"/consultas/paciente/{PacienteId}");
-    }
-
-    private async Task CarregarMedicos()
+    private async Task CarregarMedico()
     {
         try
         {
-            Console.WriteLine("Carregando lista de médicos");
-            medicos = await Http.GetFromJsonAsync<List<MedicoDTO>>("api/medicos");
-            Console.WriteLine($"Médicos carregados: {medicos?.Count ?? 0}");
+            medico = await Http.GetFromJsonAsync<MedicoDTO>($"api/medicos/{MedicoId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao carregar médicos: {ex.Message}");
-            errorMessage = "Erro ao carregar a lista de médicos. Por favor, tente novamente.";
-            medicos = new List<MedicoDTO>();
+            errorMessage = "Erro ao carregar informações do médico.";
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
         }
     }
 
-    private async Task SelecionarMedico(MedicoDTO medico)
+    private async Task CarregarAgendas()
     {
         try
         {
-            Console.WriteLine($"Selecionando médico: {medico.Id} - {medico.Nome}");
-            medicoSelecionado = medico;
-            agendaSelecionada = null;
-            await CarregarHorariosDisponiveis(medico.Id);
+            agendasDisponiveis = await Http.GetFromJsonAsync<List<AgendaDTO>>($"api/agendas/disponiveis/{MedicoId}/{dataSelecionada:yyyy-MM-dd}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao selecionar médico: {ex.Message}");
-            errorMessage = "Erro ao carregar os horários disponíveis. Por favor, tente novamente.";
+            errorMessage = "Erro ao carregar horários disponíveis.";
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
         }
     }
 
-    private async Task CarregarHorariosDisponiveis(int medicoId)
+    private class SlotHorario
     {
-        try
-        {
-            Console.WriteLine($"Carregando horários disponíveis para o médico {medicoId}");
-            agendas = await Http.GetFromJsonAsync<List<AgendaDTO>>($"api/agendas/disponiveis/medico/{medicoId}");
-            Console.WriteLine($"Horários carregados: {agendas?.Count ?? 0}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao carregar horários: {ex.Message}");
-            errorMessage = "Erro ao carregar os horários disponíveis. Por favor, tente novamente.";
-            agendas = new List<AgendaDTO>();
-        }
+        public DateTime HoraInicio { get; set; }
+        public DateTime HoraFim { get; set; }
+        public int AgendaId { get; set; }
     }
 
-    private void SelecionarAgenda(AgendaDTO agenda)
+    private List<SlotHorario> GerarSlotsDeHorarios(List<AgendaDTO> agendas)
     {
-        Console.WriteLine($"Selecionando agenda: {agenda.Id} - {agenda.DataHoraInicio}");
-        agendaSelecionada = agenda;
-    }
-
-    private async Task ConfirmarAgendamento()
-    {
-        if (medicoSelecionado == null || agendaSelecionada == null)
+        var slots = new List<SlotHorario>();
+        
+        foreach (var agenda in agendas.Where(a => a.Disponivel))
         {
-            errorMessage = "Por favor, selecione um médico e um horário antes de confirmar o agendamento.";
-            return;
-        }
-
-        try
-        {
-            Console.WriteLine($"Iniciando agendamento de consulta: Paciente={PacienteId}, Médico={medicoSelecionado.Id}, Agenda={agendaSelecionada.Id}");
-            
-            var consultaDTO = new ConsultaRegistroDTO
+            var horaAtual = agenda.DataHoraInicio;
+            while (horaAtual.AddMinutes(30) <= agenda.DataHoraFim)
             {
-                PacienteId = PacienteId,
-                MedicoId = medicoSelecionado.Id,
-                AgendaId = agendaSelecionada.Id,
-                DataHora = agendaSelecionada.DataHoraInicio
+                slots.Add(new SlotHorario
+                {
+                    HoraInicio = horaAtual,
+                    HoraFim = horaAtual.AddMinutes(30),
+                    AgendaId = agenda.Id
+                });
+                horaAtual = horaAtual.AddMinutes(30);
+            }
+        }
+
+        return slots.OrderBy(s => s.HoraInicio).ToList();
+    }
+
+    private async Task SelecionarHorario(SlotHorario slot)
+    {
+        try
+        {
+            var novaConsulta = new ConsultaRegistroDTO
+            {
+                MedicoId = MedicoId,
+                DataHora = slot.HoraInicio,
+                AgendaId = slot.AgendaId
             };
 
-            var response = await Http.PostAsJsonAsync("api/consultas", consultaDTO);
-            
-            Console.WriteLine($"Status da resposta: {response.StatusCode}");
+            var response = await Http.PostAsJsonAsync("api/consultas", novaConsulta);
             
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Consulta agendada com sucesso");
-                VoltarParaConsultas();
+                NavigationManager.NavigateTo("/minhas-consultas");
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Erro ao agendar consulta: {error}");
                 errorMessage = $"Erro ao agendar consulta: {error}";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exceção ao agendar consulta: {ex.Message}");
-            errorMessage = $"Erro ao agendar consulta: {ex.Message}";
+            errorMessage = "Erro ao agendar consulta.";
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
         }
     }
 }

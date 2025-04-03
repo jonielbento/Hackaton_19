@@ -50,27 +50,21 @@ namespace Hackaton.Web.Services
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync("console.log", "Tentando fazer login com:", model);
-                await _jsRuntime.InvokeVoidAsync("console.log", "URL base:", _httpClient.BaseAddress);
-                
                 var response = await _httpClient.PostAsJsonAsync("api/Auth/medico/login", model);
-                
-                await _jsRuntime.InvokeVoidAsync("console.log", "Status code:", response.StatusCode);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<AuthResponseModel>();
-                    await _jsRuntime.InvokeVoidAsync("console.log", "Resposta:", result);
+                    if (result != null)
+                    {
+                        await SetUserSessionAsync(result);
+                    }
                     return result;
                 }
-                
-                var error = await response.Content.ReadAsStringAsync();
-                await _jsRuntime.InvokeVoidAsync("console.log", "Erro:", error);
                 return null;
             }
-            catch (Exception ex)
+            catch
             {
-                await _jsRuntime.InvokeVoidAsync("console.log", "Exceção:", ex.Message);
                 return null;
             }
         }
@@ -79,27 +73,21 @@ namespace Hackaton.Web.Services
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync("console.log", "Tentando fazer login com:", model);
-                await _jsRuntime.InvokeVoidAsync("console.log", "URL base:", _httpClient.BaseAddress);
-                
                 var response = await _httpClient.PostAsJsonAsync("api/Auth/paciente/login", model);
-                
-                await _jsRuntime.InvokeVoidAsync("console.log", "Status code:", response.StatusCode);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<AuthResponseModel>();
-                    await _jsRuntime.InvokeVoidAsync("console.log", "Resposta:", result);
+                    if (result != null)
+                    {
+                        await SetUserSessionAsync(result);
+                    }
                     return result;
                 }
-                
-                var error = await response.Content.ReadAsStringAsync();
-                await _jsRuntime.InvokeVoidAsync("console.log", "Erro:", error);
                 return null;
             }
-            catch (Exception ex)
+            catch
             {
-                await _jsRuntime.InvokeVoidAsync("console.log", "Exceção:", ex.Message);
                 return null;
             }
         }
