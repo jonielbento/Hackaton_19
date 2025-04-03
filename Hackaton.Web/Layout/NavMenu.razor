@@ -1,0 +1,72 @@
+﻿@inject AuthService AuthService
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Sistema Médico</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        
+        @if (AuthService.IsUserAuthenticated())
+        {
+            @if (AuthService.IsMedico())
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"consultas/medico/{AuthService.CurrentUser.UserId}")">
+                        <span class="bi bi-calendar-check-fill" aria-hidden="true"></span> Minhas Consultas
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"agendas/medico/{AuthService.CurrentUser.UserId}")">
+                        <span class="bi bi-clock-fill" aria-hidden="true"></span> Gerenciar Horários
+                    </NavLink>
+                </div>
+            }
+            
+            @if (AuthService.IsPaciente())
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"consultas/paciente/{AuthService.CurrentUser.UserId}")">
+                        <span class="bi bi-calendar-date-fill" aria-hidden="true"></span> Minhas Consultas
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"agendar-consulta/{AuthService.CurrentUser.UserId}")">
+                        <span class="bi bi-plus-circle-fill" aria-hidden="true"></span> Agendar Consulta
+                    </NavLink>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> Login
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

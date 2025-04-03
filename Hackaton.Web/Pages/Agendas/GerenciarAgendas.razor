@@ -1,0 +1,240 @@
+@page "/agendas/medico/{MedicoId:int}"
+@using Hackaton.Application.DTOs
+@using Hackaton.Application.Interfaces
+@using Hackaton.Domain.Entities
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Gerenciar Horários</PageTitle>
+
+<h3>Gerenciar Horários de Atendimento</h3>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Adicionar Novo Horário</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @errorMessage
+                    </div>
+                }
+                <EditForm Model="@novaAgenda" OnValidSubmit="AdicionarHorario">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data</label>
+                        <InputDate id="data" class="form-control" @bind-Value="data" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="horaInicio" class="form-label">Hora Início</label>
+                        <InputSelect id="horaInicio" class="form-select" @bind-Value="horaInicio">
+                            @foreach (var hora in horasDisponiveis)
+                            {
+                                <option value="@hora">@hora</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="horaFim" class="form-label">Hora Fim</label>
+                        <InputSelect id="horaFim" class="form-select" @bind-Value="horaFim">
+                            @foreach (var hora in horasDisponiveis.Where(h => string.Compare(h, horaInicio) > 0))
+                            {
+                                <option value="@hora">@hora</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Adicionar Horário</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Meus Horários</h5>
+                <div>
+                    <div class="input-group">
+                        <span class="input-group-text">Filtrar por Data</span>
+                        <input type="date" class="form-control" @bind="filtroData" @bind:event="oninput" />
+                        <button class="btn btn-outline-secondary" @onclick="() => filtroData = null">Limpar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (agendas == null)
+                {
+                    <p><em>Carregando horários...</em></p>
+                }
+                else if (!agendas.Any())
+                {
+                    <p>Você não possui horários cadastrados.</p>
+                }
+                else
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var agenda in agendasFiltradas)
+                            {
+                                <tr>
+                                    <td>@agenda.DataHoraInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@agenda.DataHoraInicio.ToString("HH:mm") - @agenda.DataHoraFim.ToString("HH:mm")</td>
+                                    <td>
+                                        @if (agenda.Disponivel)
+                                        {
+                                            <span class="badge bg-success">Disponível</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Reservado</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (agenda.Disponivel)
+                                        {
+                                            <button class="btn btn-danger btn-sm" @onclick="() => ExcluirHorario(agenda.Id)">Excluir</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int MedicoId { get; set; }
+
+    private List<AgendaDTO> agendas;
+    private AgendaRegistroDTO novaAgenda = new AgendaRegistroDTO();
+    private DateTime data = DateTime.Today;
+    private string horaInicio = "08:00";
+    private string horaFim = "09:00";
+    private DateTime? filtroData = null;
+    private string errorMessage = "";
+
+    private List<string> horasDisponiveis = new List<string>
+    {
+        "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
+    };
+
+    private IEnumerable<AgendaDTO> agendasFiltradas => agendas
+        ?.Where(a => !filtroData.HasValue || a.DataHoraInicio.Date == filtroData.Value.Date)
+        .OrderBy(a => a.DataHoraInicio)
+        .ToList() ?? new List<AgendaDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        novaAgenda.MedicoId = MedicoId;
+        await CarregarAgendas();
+    }
+
+    private async Task CarregarAgendas()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Carregando agendas para o médico:", MedicoId);
+            agendas = await Http.GetFromJsonAsync<List<AgendaDTO>>($"api/agendas/medico/{MedicoId}");
+            await JSRuntime.InvokeVoidAsync("console.log", "Agendas carregadas:", agendas);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Erro ao carregar agendas:", ex.Message);
+            agendas = new List<AgendaDTO>();
+        }
+    }
+
+    private async Task AdicionarHorario()
+    {
+        try
+        {
+            errorMessage = "";
+            
+            // Converter string de hora para TimeSpan
+            var horaInicioSpan = TimeSpan.Parse(horaInicio);
+            var horaFimSpan = TimeSpan.Parse(horaFim);
+
+            // Criar os DateTimes combinando a data com as horas
+            novaAgenda.DataHoraInicio = data.Date.Add(horaInicioSpan);
+            novaAgenda.DataHoraFim = data.Date.Add(horaFimSpan);
+            novaAgenda.MedicoId = MedicoId;
+
+            await JSRuntime.InvokeVoidAsync("console.log", "Enviando nova agenda:", novaAgenda);
+
+            var response = await Http.PostAsJsonAsync("api/agendas", novaAgenda);
+            
+            await JSRuntime.InvokeVoidAsync("console.log", "Status code:", response.StatusCode);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarAgendas();
+                // Resetar o formulário
+                data = DateTime.Today;
+                horaInicio = "08:00";
+                horaFim = "09:00";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeVoidAsync("console.log", "Erro ao adicionar horário:", error);
+                errorMessage = $"Erro ao adicionar horário: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Exceção ao adicionar horário:", ex.Message);
+            errorMessage = $"Erro ao adicionar horário: {ex.Message}";
+        }
+    }
+
+    private async Task ExcluirHorario(int agendaId)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Excluindo agenda:", agendaId);
+            
+            var response = await Http.DeleteAsync($"api/agendas/{agendaId}");
+            
+            await JSRuntime.InvokeVoidAsync("console.log", "Status code:", response.StatusCode);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarAgendas();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeVoidAsync("console.log", "Erro ao excluir horário:", error);
+                errorMessage = $"Erro ao excluir horário: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Exceção ao excluir horário:", ex.Message);
+            errorMessage = $"Erro ao excluir horário: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,41 @@
+﻿@page "/"
+@inject AuthService AuthService
+
+<PageTitle>Home - Sistema Médico</PageTitle>
+
+<div class="container mt-4">
+    <div class="jumbotron">
+        <h1 class="display-4">Bem-vindo ao Sistema Médico</h1>
+        
+        @if (AuthService.IsUserAuthenticated())
+        {
+            <p class="lead">Olá, @AuthService.CurrentUser.Nome! Você está logado como @AuthService.CurrentUser.UserType.</p>
+            
+            @if (AuthService.IsMedico())
+            {
+                <hr class="my-4">
+                <p>Utilize o menu lateral para gerenciar seus horários e consultas.</p>
+                <p class="lead">
+                    <a class="btn btn-primary" href="@($"consultas/medico/{AuthService.CurrentUser.UserId}")" role="button">Ver Minhas Consultas</a>
+                </p>
+            }
+            else if (AuthService.IsPaciente())
+            {
+                <hr class="my-4">
+                <p>Utilize o menu lateral para agendar consultas e verificar seus agendamentos.</p>
+                <p class="lead">
+                    <a class="btn btn-primary" href="@($"agendar-consulta/{AuthService.CurrentUser.UserId}")" role="button">Agendar Consulta</a>
+                </p>
+            }
+        }
+        else
+        {
+            <p class="lead">Faça login para acessar todas as funcionalidades do sistema.</p>
+            <hr class="my-4">
+            <p>O Sistema Médico permite que médicos gerenciem seus horários e pacientes agendem consultas de forma simples e rápida.</p>
+            <p class="lead">
+                <a class="btn btn-primary" href="login" role="button">Fazer Login</a>
+            </p>
+        }
+    </div>
+</div>

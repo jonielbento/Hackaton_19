@@ -1,0 +1,190 @@
+@page "/login"
+@using Hackaton.Web.Models
+@using Hackaton.Web.Services
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Login - Sistema Médico</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "medico" ? "active" : "")" @onclick="() => SelecionarTabMedico()">Médico</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "paciente" ? "active" : "")" @onclick="() => SelecionarTabPaciente()">Paciente</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @errorMessage
+                    </div>
+                }
+
+                @if (activeTab == "medico")
+                {
+                    <EditForm Model="medicoLogin" OnValidSubmit="HandleMedicoLogin">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="crm" class="form-label">CRM</label>
+                            <InputText id="crm" @bind-Value="medicoLogin.CRM" class="form-control" />
+                            <ValidationMessage For="@(() => medicoLogin.CRM)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="senha" class="form-label">Senha</label>
+                            <InputText id="senha" @bind-Value="medicoLogin.Senha" class="form-control" type="password" />
+                            <ValidationMessage For="@(() => medicoLogin.Senha)" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span>Carregando...</span>
+                            }
+                            else
+                            {
+                                <span>Entrar</span>
+                            }
+                        </button>
+                        <a href="/cadastro/medico" class="btn btn-link">Criar conta de médico</a>
+                    </EditForm>
+                }
+                else
+                {
+                    <EditForm Model="pacienteLogin" OnValidSubmit="HandlePacienteLogin">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="identificacao" class="form-label">CPF</label>
+                            <InputText id="identificacao" @bind-Value="pacienteLogin.Identificacao" class="form-control" />
+                            <ValidationMessage For="@(() => pacienteLogin.Identificacao)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="senha" class="form-label">Senha</label>
+                            <InputText id="senha" @bind-Value="pacienteLogin.Senha" class="form-control" type="password" />
+                            <ValidationMessage For="@(() => pacienteLogin.Senha)" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span>Carregando...</span>
+                            }
+                            else
+                            {
+                                <span>Entrar</span>
+                            }
+                        </button>
+                        <a href="/cadastro/paciente" class="btn btn-link">Criar conta de paciente</a>
+                    </EditForm>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string activeTab = "medico";
+    private bool isLoading = false;
+    private string errorMessage = "";
+    private MedicoLoginModel medicoLogin = new();
+    private PacienteLoginModel pacienteLogin = new();
+
+    private void SelecionarTabMedico()
+    {
+        activeTab = "medico";
+        errorMessage = "";
+    }
+
+    private void SelecionarTabPaciente()
+    {
+        activeTab = "paciente";
+        errorMessage = "";
+    }
+
+    private async Task HandleMedicoLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = "";
+
+            await JSRuntime.InvokeVoidAsync("console.log", "Iniciando login de médico com:", medicoLogin);
+
+            var response = await AuthService.LoginMedicoAsync(medicoLogin);
+            
+            await JSRuntime.InvokeVoidAsync("console.log", "Resposta do login:", response);
+
+            if (response != null)
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Login bem-sucedido, configurando sessão");
+                await AuthService.SetUserSessionAsync(response);
+                NavigationManager.NavigateTo($"/consultas/medico/{response.UserId}");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Login falhou - resposta nula");
+                errorMessage = "CRM ou senha inválidos";
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Erro durante o login:", ex.Message);
+            errorMessage = $"Erro ao fazer login: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandlePacienteLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = "";
+
+            await JSRuntime.InvokeVoidAsync("console.log", "Iniciando login de paciente com:", pacienteLogin);
+
+            var response = await AuthService.LoginPacienteAsync(pacienteLogin);
+            
+            await JSRuntime.InvokeVoidAsync("console.log", "Resposta do login:", response);
+
+            if (response != null)
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Login bem-sucedido, configurando sessão");
+                await AuthService.SetUserSessionAsync(response);
+                NavigationManager.NavigateTo($"/consultas/paciente/{response.UserId}");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Login falhou - resposta nula");
+                errorMessage = "CPF ou senha inválidos";
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Erro durante o login:", ex.Message);
+            errorMessage = $"Erro ao fazer login: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

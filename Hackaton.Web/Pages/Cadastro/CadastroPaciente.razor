@@ -1,0 +1,127 @@
+@page "/cadastro/paciente"
+@using Hackaton.Web.Models
+@using Hackaton.Web.Services
+@inject NavigationManager NavigationManager
+@inject PacienteService PacienteService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Cadastro de Paciente - Sistema Médico</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Cadastro de Paciente</h3>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @errorMessage
+                    </div>
+                }
+
+                <EditForm Model="pacienteRegistro" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <InputText id="nome" @bind-Value="pacienteRegistro.Nome" class="form-control" />
+                        <ValidationMessage For="@(() => pacienteRegistro.Nome)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <InputText id="cpf" @bind-Value="pacienteRegistro.CPF" class="form-control" />
+                        <ValidationMessage For="@(() => pacienteRegistro.CPF)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <InputText id="email" @bind-Value="pacienteRegistro.Email" class="form-control" type="email" />
+                        <ValidationMessage For="@(() => pacienteRegistro.Email)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <InputText id="telefone" @bind-Value="pacienteRegistro.Telefone" class="form-control" />
+                        <ValidationMessage For="@(() => pacienteRegistro.Telefone)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Senha</label>
+                        <InputText id="senha" @bind-Value="pacienteRegistro.Senha" class="form-control" type="password" />
+                        <ValidationMessage For="@(() => pacienteRegistro.Senha)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmarSenha" class="form-label">Confirmar Senha</label>
+                        <InputText id="confirmarSenha" @bind-Value="pacienteRegistro.ConfirmarSenha" class="form-control" type="password" />
+                        <ValidationMessage For="@(() => pacienteRegistro.ConfirmarSenha)" />
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span>Cadastrando...</span>
+                            }
+                            else
+                            {
+                                <span>Cadastrar</span>
+                            }
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="VoltarParaLogin">Voltar</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private PacienteRegistroModel pacienteRegistro = new();
+    private bool isLoading = false;
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (pacienteRegistro.Senha != pacienteRegistro.ConfirmarSenha)
+            {
+                errorMessage = "As senhas não coincidem";
+                return;
+            }
+
+            isLoading = true;
+            errorMessage = "";
+
+            var result = await PacienteService.RegisterAsync(pacienteRegistro);
+            if (result)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Cadastro realizado com sucesso!");
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = "Erro ao realizar cadastro";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao cadastrar: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void VoltarParaLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+} 

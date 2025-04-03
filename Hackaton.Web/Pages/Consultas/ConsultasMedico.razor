@@ -1,0 +1,226 @@
+@page "/consultas/medico/{MedicoId:int}"
+@using Hackaton.Application.DTOs
+@using Hackaton.Application.Interfaces
+@using Hackaton.Domain.Entities
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Consultas do Médico</PageTitle>
+
+<h3>Minhas Consultas</h3>
+
+@if (consultas == null)
+{
+    <p><em>Carregando...</em></p>
+}
+else if (!consultas.Any())
+{
+    <p>Você não possui consultas agendadas.</p>
+}
+else
+{
+    <div class="mb-3">
+        <div class="btn-group" role="group">
+            <button class="btn @(filtroStatus == null ? "btn-primary" : "btn-outline-primary")" @onclick="() => FiltrarPorStatus(null)">Todas</button>
+            <button class="btn @(filtroStatus == StatusConsulta.Agendada ? "btn-primary" : "btn-outline-primary")" @onclick="() => FiltrarPorStatus(StatusConsulta.Agendada)">Agendadas</button>
+            <button class="btn @(filtroStatus == StatusConsulta.Confirmada ? "btn-primary" : "btn-outline-primary")" @onclick="() => FiltrarPorStatus(StatusConsulta.Confirmada)">Confirmadas</button>
+            <button class="btn @(filtroStatus == StatusConsulta.Cancelada ? "btn-primary" : "btn-outline-primary")" @onclick="() => FiltrarPorStatus(StatusConsulta.Cancelada)">Canceladas</button>
+            <button class="btn @(filtroStatus == StatusConsulta.Realizada ? "btn-primary" : "btn-outline-primary")" @onclick="() => FiltrarPorStatus(StatusConsulta.Realizada)">Realizadas</button>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Data/Hora</th>
+                <th>Status</th>
+                <th>Valor</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var consulta in consultasFiltradas)
+            {
+                <tr>
+                    <td>
+                        <a href="/consultas/detalhes/@consulta.Id" class="text-decoration-none">@consulta.NomePaciente</a>
+                    </td>
+                    <td>@consulta.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <span class="badge @GetStatusClass(consulta.Status)">@consulta.Status</span>
+                    </td>
+                    <td>@consulta.Valor.ToString("C")</td>
+                    <td>
+                        <a href="/consultas/detalhes/@consulta.Id" class="btn btn-info btn-sm">Detalhes</a>
+                        @if (consulta.Status == StatusConsulta.Agendada)
+                        {
+                            <button class="btn btn-success btn-sm" @onclick="() => AceitarConsulta(consulta.Id)">Aceitar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => RecusarConsulta(consulta.Id)">Recusar</button>
+                        }
+                        @if (consulta.Status == StatusConsulta.Confirmada)
+                        {
+                            <button class="btn btn-primary btn-sm" @onclick="() => MarcarRealizada(consulta.Id)">Marcar como Realizada</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (mostrarModalJustificativa)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Justificativa para Recusa</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="justificativa">Informe o motivo da recusa:</label>
+                        <textarea id="justificativa" class="form-control" @bind="justificativa" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmarRecusa">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter]
+    public int MedicoId { get; set; }
+
+    private List<ConsultaDTO> consultas;
+    private List<ConsultaDTO> consultasFiltradas => consultas
+        .Where(c => filtroStatus == null || c.Status == filtroStatus)
+        .OrderBy(c => c.DataHora)
+        .ToList();
+
+    private StatusConsulta? filtroStatus = null;
+    private bool mostrarModalJustificativa = false;
+    private int consultaIdSelecionada;
+    private string justificativa;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarConsultas();
+    }
+
+    private async Task CarregarConsultas()
+    {
+        try
+        {
+            consultas = await Http.GetFromJsonAsync<List<ConsultaDTO>>($"api/consultas/medico/{MedicoId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar consultas: {ex.Message}");
+            consultas = new List<ConsultaDTO>();
+        }
+    }
+
+    private void FiltrarPorStatus(StatusConsulta? status)
+    {
+        filtroStatus = status;
+    }
+
+    private string GetStatusClass(StatusConsulta status)
+    {
+        return status switch
+        {
+            StatusConsulta.Agendada => "bg-warning",
+            StatusConsulta.Confirmada => "bg-success",
+            StatusConsulta.Recusada => "bg-danger",
+            StatusConsulta.Cancelada => "bg-secondary",
+            StatusConsulta.Realizada => "bg-info",
+            _ => "bg-primary"
+        };
+    }
+
+    private async Task AceitarConsulta(int consultaId)
+    {
+        try
+        {
+            var response = await Http.PutAsync($"api/consultas/{consultaId}/aceitar", null);
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarConsultas();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao aceitar consulta: {ex.Message}");
+        }
+    }
+
+    private void RecusarConsulta(int consultaId)
+    {
+        consultaIdSelecionada = consultaId;
+        justificativa = string.Empty;
+        mostrarModalJustificativa = true;
+    }
+
+    private async Task ConfirmarRecusa()
+    {
+        if (string.IsNullOrWhiteSpace(justificativa))
+        {
+            return;
+        }
+
+        try
+        {
+            var atualizacaoDTO = new ConsultaAtualizacaoDTO
+            {
+                Id = consultaIdSelecionada,
+                Status = StatusConsulta.Recusada,
+                Justificativa = justificativa
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/cancelar", atualizacaoDTO);
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarConsultas();
+                FecharModal();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao recusar consulta: {ex.Message}");
+        }
+    }
+
+    private async Task MarcarRealizada(int consultaId)
+    {
+        try
+        {
+            var atualizacaoDTO = new ConsultaAtualizacaoDTO
+            {
+                Id = consultaId,
+                Status = StatusConsulta.Realizada
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaId}/atualizar-status", atualizacaoDTO);
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarConsultas();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao marcar consulta como realizada: {ex.Message}");
+        }
+    }
+
+    private void FecharModal()
+    {
+        mostrarModalJustificativa = false;
+    }
+}

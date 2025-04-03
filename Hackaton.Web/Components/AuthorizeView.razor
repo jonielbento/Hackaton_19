@@ -1,0 +1,49 @@
+@using Hackaton.Web.Services
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+@if (AuthService.IsUserAuthenticated())
+{
+    @if (string.IsNullOrEmpty(Roles) || IsInRole())
+    {
+        @ChildContent
+    }
+    else
+    {
+        @NotAuthorized
+    }
+}
+else
+{
+    <div class="alert alert-warning">
+        Você precisa estar autenticado para acessar esta página.
+        <button class="btn btn-primary" @onclick="RedirectToLogin">Ir para Login</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    [Parameter]
+    public RenderFragment NotAuthorized { get; set; } = null!;
+
+    [Parameter]
+    public string Roles { get; set; } = "";
+
+    private bool IsInRole()
+    {
+        if (string.IsNullOrEmpty(Roles))
+            return true;
+
+        var userRoles = Roles.Split(',');
+        return userRoles.Any(role => 
+            (role.Trim() == "Medico" && AuthService.IsMedico()) ||
+            (role.Trim() == "Paciente" && AuthService.IsPaciente()));
+    }
+
+    private void RedirectToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

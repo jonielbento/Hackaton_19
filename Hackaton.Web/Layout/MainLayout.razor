@@ -1,0 +1,42 @@
+﻿@inherits LayoutComponentBase
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            @if (AuthService.IsUserAuthenticated())
+            {
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Olá, @AuthService.CurrentUser.Nome</span>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="HandleLogout">Sair</button>
+                </div>
+            }
+            else
+            {
+                <a href="/login" class="btn btn-sm btn-primary">Login</a>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task HandleLogout()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Deseja realmente sair?");
+        if (confirmed)
+        {
+            await AuthService.LogoutAsync();
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}
