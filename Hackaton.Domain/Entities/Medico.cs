@@ -11,8 +11,6 @@ namespace Hackaton.Domain.Entities
         public string Senha { get; set; } = null!;
         public string Especialidade { get; set; } = null!;
         public decimal ValorConsulta { get; set; }
-        public string? Telefone { get; set; }
-        public string? Email { get; set; }
         
         // Relacionamentos
         public virtual ICollection<Agenda> Agendas { get; set; } = new List<Agenda>();

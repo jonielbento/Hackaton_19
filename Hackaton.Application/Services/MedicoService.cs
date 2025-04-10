@@ -33,9 +33,7 @@ namespace Hackaton.Application.Services
                 Nome = medico.Nome,
                 CRM = medico.CRM,
                 Especialidade = medico.Especialidade,
-                ValorConsulta = medico.ValorConsulta,
-                Telefone = medico.Telefone,
-                Email = medico.Email
+                ValorConsulta = medico.ValorConsulta
             };
         }
 
@@ -52,9 +50,7 @@ namespace Hackaton.Application.Services
                 CRM = medicoDTO.CRM,
                 Senha = medicoDTO.Senha,
                 Especialidade = medicoDTO.Especialidade,
-                ValorConsulta = medicoDTO.ValorConsulta,
-                Telefone = medicoDTO.Telefone,
-                Email = medicoDTO.Email
+                ValorConsulta = medicoDTO.ValorConsulta
             };
 
             _context.Medicos.Add(medico);
@@ -66,9 +62,7 @@ namespace Hackaton.Application.Services
                 Nome = medico.Nome,
                 CRM = medico.CRM,
                 Especialidade = medico.Especialidade,
-                ValorConsulta = medico.ValorConsulta,
-                Telefone = medico.Telefone,
-                Email = medico.Email
+                ValorConsulta = medico.ValorConsulta
             };
         }
 
@@ -100,9 +94,7 @@ namespace Hackaton.Application.Services
                 Nome = m.Nome,
                 CRM = m.CRM,
                 Especialidade = m.Especialidade,
-                ValorConsulta = m.ValorConsulta,
-                Telefone = m.Telefone,
-                Email = m.Email
+                ValorConsulta = m.ValorConsulta
             });
         }
 
@@ -119,9 +111,7 @@ namespace Hackaton.Application.Services
                 Nome = medico.Nome,
                 CRM = medico.CRM,
                 Especialidade = medico.Especialidade,
-                ValorConsulta = medico.ValorConsulta,
-                Telefone = medico.Telefone,
-                Email = medico.Email
+                ValorConsulta = medico.ValorConsulta
             };
         }
 
@@ -138,9 +128,7 @@ namespace Hackaton.Application.Services
                 Nome = medico.Nome,
                 CRM = medico.CRM,
                 Especialidade = medico.Especialidade,
-                ValorConsulta = medico.ValorConsulta,
-                Telefone = medico.Telefone,
-                Email = medico.Email
+                ValorConsulta = medico.ValorConsulta
             };
         }
 
@@ -162,8 +150,6 @@ namespace Hackaton.Application.Services
             medico.CRM = medicoDTO.CRM;
             medico.Especialidade = medicoDTO.Especialidade;
             medico.ValorConsulta = medicoDTO.ValorConsulta;
-            medico.Telefone = medicoDTO.Telefone;
-            medico.Email = medicoDTO.Email;
 
             _context.Medicos.Update(medico);
             await _context.SaveChangesAsync();
@@ -174,9 +160,7 @@ namespace Hackaton.Application.Services
                 Nome = medico.Nome,
                 CRM = medico.CRM,
                 Especialidade = medico.Especialidade,
-                ValorConsulta = medico.ValorConsulta,
-                Telefone = medico.Telefone,
-                Email = medico.Email
+                ValorConsulta = medico.ValorConsulta
             };
         }
 
@@ -192,9 +176,7 @@ namespace Hackaton.Application.Services
                 Nome = m.Nome,
                 CRM = m.CRM,
                 Especialidade = m.Especialidade,
-                ValorConsulta = m.ValorConsulta,
-                Telefone = m.Telefone,
-                Email = m.Email
+                ValorConsulta = m.ValorConsulta
             });
         }
     }

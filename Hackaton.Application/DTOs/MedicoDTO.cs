@@ -9,8 +9,6 @@ namespace Hackaton.Application.DTOs
         public string CRM { get; set; } = null!;
         public string Especialidade { get; set; } = null!;
         public decimal ValorConsulta { get; set; }
-        public string? Telefone { get; set; }
-        public string? Email { get; set; }
     }
     
     public class MedicoRegistroDTO
@@ -20,7 +18,5 @@ namespace Hackaton.Application.DTOs
         public string Senha { get; set; } = null!;
         public string Especialidade { get; set; } = null!;
         public decimal ValorConsulta { get; set; }
-        public string? Telefone { get; set; }
-        public string? Email { get; set; }
     }
 }

@@ -24,10 +24,14 @@ namespace Hackaton.Application.Services
             var consulta = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
+                .Include(c => c.Agenda)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (consulta == null)
                 return null;
+
+            if (consulta.Status != StatusConsulta.Agendada)
+                throw new Exception("Só é possível aceitar consultas com status 'Agendada'");
 
             consulta.Status = StatusConsulta.Confirmada;
             _context.Consultas.Update(consulta);
@@ -51,9 +55,7 @@ namespace Hackaton.Application.Services
                     Nome = consulta.Medico.Nome,
                     CRM = consulta.Medico.CRM,
                     Especialidade = consulta.Medico.Especialidade,
-                    ValorConsulta = consulta.Medico.ValorConsulta,
-                    Telefone = consulta.Medico.Telefone,
-                    Email = consulta.Medico.Email
+                    ValorConsulta = consulta.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -109,9 +111,7 @@ namespace Hackaton.Application.Services
                     Nome = consulta.Medico.Nome,
                     CRM = consulta.Medico.CRM,
                     Especialidade = consulta.Medico.Especialidade,
-                    ValorConsulta = consulta.Medico.ValorConsulta,
-                    Telefone = consulta.Medico.Telefone,
-                    Email = consulta.Medico.Email
+                    ValorConsulta = consulta.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -219,9 +219,7 @@ namespace Hackaton.Application.Services
                         Nome = medico.Nome,
                         CRM = medico.CRM,
                         Especialidade = medico.Especialidade,
-                        ValorConsulta = medico.ValorConsulta,
-                        Telefone = medico.Telefone,
-                        Email = medico.Email
+                        ValorConsulta = medico.ValorConsulta
                     },
                     Paciente = new PacienteDTO
                     {
@@ -258,6 +256,7 @@ namespace Hackaton.Application.Services
             var consultas = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
+                .OrderByDescending(c => c.DataHora)
                 .ToListAsync();
 
             return consultas.Select(c => new ConsultaDTO
@@ -278,9 +277,7 @@ namespace Hackaton.Application.Services
                     Nome = c.Medico.Nome,
                     CRM = c.Medico.CRM,
                     Especialidade = c.Medico.Especialidade,
-                    ValorConsulta = c.Medico.ValorConsulta,
-                    Telefone = c.Medico.Telefone,
-                    Email = c.Medico.Email
+                    ValorConsulta = c.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -322,9 +319,7 @@ namespace Hackaton.Application.Services
                     Nome = consulta.Medico.Nome,
                     CRM = consulta.Medico.CRM,
                     Especialidade = consulta.Medico.Especialidade,
-                    ValorConsulta = consulta.Medico.ValorConsulta,
-                    Telefone = consulta.Medico.Telefone,
-                    Email = consulta.Medico.Email
+                    ValorConsulta = consulta.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -344,6 +339,7 @@ namespace Hackaton.Application.Services
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
                 .Where(c => c.MedicoId == medicoId)
+                .OrderByDescending(c => c.DataHora)
                 .ToListAsync();
 
             return consultas.Select(c => new ConsultaDTO
@@ -364,9 +360,7 @@ namespace Hackaton.Application.Services
                     Nome = c.Medico.Nome,
                     CRM = c.Medico.CRM,
                     Especialidade = c.Medico.Especialidade,
-                    ValorConsulta = c.Medico.ValorConsulta,
-                    Telefone = c.Medico.Telefone,
-                    Email = c.Medico.Email
+                    ValorConsulta = c.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -431,9 +425,7 @@ namespace Hackaton.Application.Services
                                 Nome = c.Medico.Nome,
                                 CRM = c.Medico.CRM,
                                 Especialidade = c.Medico.Especialidade,
-                                ValorConsulta = c.Medico.ValorConsulta,
-                                Telefone = c.Medico.Telefone,
-                                Email = c.Medico.Email
+                                ValorConsulta = c.Medico.ValorConsulta
                             };
                         }
 
@@ -512,9 +504,7 @@ namespace Hackaton.Application.Services
                     Nome = consulta.Medico.Nome,
                     CRM = consulta.Medico.CRM,
                     Especialidade = consulta.Medico.Especialidade,
-                    ValorConsulta = consulta.Medico.ValorConsulta,
-                    Telefone = consulta.Medico.Telefone,
-                    Email = consulta.Medico.Email
+                    ValorConsulta = consulta.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {
@@ -560,9 +550,7 @@ namespace Hackaton.Application.Services
                     Nome = consulta.Medico.Nome,
                     CRM = consulta.Medico.CRM,
                     Especialidade = consulta.Medico.Especialidade,
-                    ValorConsulta = consulta.Medico.ValorConsulta,
-                    Telefone = consulta.Medico.Telefone,
-                    Email = consulta.Medico.Email
+                    ValorConsulta = consulta.Medico.ValorConsulta
                 },
                 Paciente = new PacienteDTO
                 {

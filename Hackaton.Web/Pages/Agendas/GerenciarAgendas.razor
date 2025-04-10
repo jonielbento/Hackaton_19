@@ -53,7 +53,7 @@
                     </div>
                     
                     <div class="alert alert-info">
-                        Este período será dividido em slots de 30 minutos para agendamento.
+                        Este período será dividido em consultas de 30 minutos para agendamento.
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Adicionar Período</button>
@@ -93,7 +93,7 @@
                                 <th>Data</th>
                                 <th>Período</th>
                                 <th>Status</th>
-                                <th>Slots Disponíveis</th>
+                                <th>Consultas Disponíveis</th>
                                 <th>Consultas Marcadas</th>
                                 <th>Ações</th>
                             </tr>
@@ -117,7 +117,7 @@
                                     <td>
                                         @{
                                             var totalSlots = (int)((agenda.DataHoraFim - agenda.DataHoraInicio).TotalMinutes / 30);
-                                            @totalSlots <text> slots de 30 minutos</text>
+                                            @totalSlots <text> consultas de 30 minutos</text>
                                         }
                                     </td>
                                     <td>
