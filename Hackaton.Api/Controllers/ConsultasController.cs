@@ -1,6 +1,8 @@
 using Hackaton.Application.DTOs;
 using Hackaton.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Hackaton.Api.Controllers
 {
@@ -89,13 +91,39 @@ namespace Hackaton.Api.Controllers
         }
 
         [HttpPut("{id}/cancelar")]
-        public async Task<ActionResult<ConsultaDTO>> CancelarConsulta(int id, [FromBody] string justificativa)
+        public async Task<ActionResult<ConsultaDTO>> CancelarConsulta(int id, [FromBody] object bodyContent)
         {
-            var consulta = await _consultaService.CancelarConsultaAsync(id, justificativa);
-            if (consulta == null)
-                return NotFound();
+            try 
+            {
+                string justificativa = null;
+                
+                // Verifica se o corpo da requisição é uma string ou um objeto
+                if (bodyContent is string justificativaString)
+                {
+                    justificativa = justificativaString;
+                }
+                else
+                {
+                    // Tenta extrair a justificativa do objeto
+                    var bodyJson = JsonSerializer.Serialize(bodyContent);
+                    var objDict = JsonSerializer.Deserialize<Dictionary<string, object>>(bodyJson);
+                    
+                    if (objDict != null && objDict.ContainsKey("justificativa"))
+                    {
+                        justificativa = objDict["justificativa"].ToString();
+                    }
+                }
+                
+                var consulta = await _consultaService.CancelarConsultaAsync(id, justificativa);
+                if (consulta == null)
+                    return NotFound();
 
-            return Ok(consulta);
+                return Ok(consulta);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/recusar")]

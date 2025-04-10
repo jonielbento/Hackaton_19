@@ -61,6 +61,7 @@ else
                         @if (consulta.Status == StatusConsulta.Confirmada)
                         {
                             <button class="btn btn-primary btn-sm" @onclick="() => MarcarRealizada(consulta.Id)">Marcar como Realizada</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => CancelarConsulta(consulta.Id)">Cancelar</button>
                         }
                     </td>
                 </tr>
@@ -75,18 +76,18 @@ else
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Justificativa para Recusa</h5>
+                    <h5 class="modal-title">@(acaoAtual == "cancelar" ? "Justificativa para Cancelamento" : "Justificativa para Recusa")</h5>
                     <button type="button" class="btn-close" @onclick="FecharModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="justificativa">Informe o motivo da recusa:</label>
+                        <label for="justificativa">Informe o motivo @(acaoAtual == "cancelar" ? "do cancelamento" : "da recusa"):</label>
                         <textarea id="justificativa" class="form-control" @bind="justificativa" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" @onclick="ConfirmarRecusa">Confirmar</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmarAcao">Confirmar</button>
                 </div>
             </div>
         </div>
@@ -108,6 +109,7 @@ else
     private bool mostrarModalJustificativa = false;
     private int consultaIdSelecionada;
     private string justificativa;
+    private string acaoAtual = "recusar";
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,10 +167,19 @@ else
     {
         consultaIdSelecionada = consultaId;
         justificativa = string.Empty;
+        acaoAtual = "recusar";
         mostrarModalJustificativa = true;
     }
 
-    private async Task ConfirmarRecusa()
+    private void CancelarConsulta(int consultaId)
+    {
+        consultaIdSelecionada = consultaId;
+        justificativa = string.Empty;
+        acaoAtual = "cancelar";
+        mostrarModalJustificativa = true;
+    }
+
+    private async Task ConfirmarAcao()
     {
         if (string.IsNullOrWhiteSpace(justificativa))
         {
@@ -180,11 +191,12 @@ else
             var atualizacaoDTO = new ConsultaAtualizacaoDTO
             {
                 Id = consultaIdSelecionada,
-                Status = StatusConsulta.Recusada,
+                Status = acaoAtual == "cancelar" ? StatusConsulta.Cancelada : StatusConsulta.Recusada,
                 Justificativa = justificativa
             };
 
-            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/cancelar", atualizacaoDTO);
+            var endpoint = acaoAtual == "recusar" ? "recusar" : "cancelar";
+            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/{endpoint}", atualizacaoDTO);
             if (response.IsSuccessStatusCode)
             {
                 await CarregarConsultas();
@@ -193,7 +205,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao recusar consulta: {ex.Message}");
+            Console.WriteLine($"Erro ao {acaoAtual} consulta: {ex.Message}");
         }
     }
 
