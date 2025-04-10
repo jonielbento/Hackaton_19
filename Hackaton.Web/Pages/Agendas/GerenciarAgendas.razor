@@ -120,10 +120,19 @@
                                             var consultasAgenda = GetConsultasPorAgenda(agenda);
                                             var consultasMarcadas = consultasAgenda.Count();
                                             var slotsDisponiveis = totalSlots - consultasMarcadas;
-                                            
-                                            <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
-                                                <strong>@slotsDisponiveis</strong> de @totalSlots disponíveis
-                                            </span>
+
+                                            if (totalSlots == slotsDisponiveis)
+                                            {
+                                                <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">                                                
+                                                    <strong>@slotsDisponiveis</strong> consultas disponíveis
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
+                                                    <strong>@slotsDisponiveis</strong> consultas marcadas de @totalSlots disponíveis
+                                                </span>
+                                            }
                                         }
                                     </td>
                                     <td>
