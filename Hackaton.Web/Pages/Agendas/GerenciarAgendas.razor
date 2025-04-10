@@ -94,6 +94,7 @@
                                 <th>Período</th>
                                 <th>Status</th>
                                 <th>Slots Disponíveis</th>
+                                <th>Consultas Marcadas</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -120,6 +121,29 @@
                                         }
                                     </td>
                                     <td>
+                                        @{
+                                            var consultasAgenda = GetConsultasPorAgenda(agenda);
+                                            
+                                            @if (!consultasAgenda.Any())
+                                            {
+                                                <span class="text-muted">Nenhuma consulta</span>
+                                            }
+                                            else
+                                            {
+                                                <ul class="list-unstyled">
+                                                    @foreach (var consulta in consultasAgenda)
+                                                    {
+                                                        <li>
+                                                            <span class="badge @GetStatusClass(consulta.Status)">@consulta.Status</span>
+                                                            @consulta.DataHora.ToString("HH:mm") - @consulta.NomePaciente
+                                                            <a href="/consultas/detalhes/@consulta.Id" class="btn btn-sm btn-info">Detalhes</a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        }
+                                    </td>
+                                    <td>
                                         @if (agenda.Disponivel)
                                         {
                                             <button class="btn btn-danger btn-sm" @onclick="() => ExcluirHorario(agenda.Id)">Excluir</button>
@@ -140,6 +164,7 @@
     public int MedicoId { get; set; }
 
     private List<AgendaDTO> agendas;
+    private List<ConsultaDTO> consultas;
     private AgendaRegistroDTO novaAgenda = new AgendaRegistroDTO();
     private DateTime data = DateTime.Today;
     private string horaInicio = "08:00";
@@ -161,6 +186,7 @@
     {
         novaAgenda.MedicoId = MedicoId;
         await CarregarAgendas();
+        await CarregarConsultas();
     }
 
     private async Task CarregarAgendas()
@@ -176,6 +202,45 @@
             await JSRuntime.InvokeVoidAsync("console.log", "Erro ao carregar agendas:", ex.Message);
             agendas = new List<AgendaDTO>();
         }
+    }
+
+    private async Task CarregarConsultas()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Carregando consultas para o médico:", MedicoId);
+            consultas = await Http.GetFromJsonAsync<List<ConsultaDTO>>($"api/consultas/medico/{MedicoId}");
+            await JSRuntime.InvokeVoidAsync("console.log", "Consultas carregadas:", consultas);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Erro ao carregar consultas:", ex.Message);
+            consultas = new List<ConsultaDTO>();
+        }
+    }
+
+    private IEnumerable<ConsultaDTO> GetConsultasPorAgenda(AgendaDTO agenda)
+    {
+        if (consultas == null) return new List<ConsultaDTO>();
+        
+        return consultas.Where(c => c.AgendaId == agenda.Id && 
+                                  c.Status != StatusConsulta.Cancelada && 
+                                  c.Status != StatusConsulta.Recusada)
+                       .OrderBy(c => c.DataHora)
+                       .ToList();
+    }
+
+    private string GetStatusClass(StatusConsulta status)
+    {
+        return status switch
+        {
+            StatusConsulta.Agendada => "bg-warning",
+            StatusConsulta.Confirmada => "bg-success",
+            StatusConsulta.Recusada => "bg-danger",
+            StatusConsulta.Cancelada => "bg-secondary",
+            StatusConsulta.Realizada => "bg-info",
+            _ => "bg-primary"
+        };
     }
 
     private async Task AdicionarHorario()
