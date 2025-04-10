@@ -4,6 +4,7 @@
 @using Hackaton.Domain.Entities
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject Hackaton.Web.Services.AuthService AuthService
 
 <PageTitle>Detalhes da Consulta</PageTitle>
 
@@ -81,14 +82,21 @@ else
                 <div class="col-md-12">
                     <h5>Ações</h5>
                     <div class="d-flex gap-2">
-                        @if (consulta.Status == StatusConsulta.Agendada)
+                        @if (AuthService.IsMedico())
                         {
-                            <button class="btn btn-success" @onclick="() => AceitarConsulta(consulta.Id)">Aceitar Consulta</button>
-                            <button class="btn btn-danger" @onclick="() => RecusarConsulta(consulta.Id)">Recusar Consulta</button>
+                            @if (consulta.Status == StatusConsulta.Agendada)
+                            {
+                                <button class="btn btn-success" @onclick="() => AceitarConsulta(consulta.Id)">Aceitar Consulta</button>
+                                <button class="btn btn-danger" @onclick="() => RecusarConsulta(consulta.Id)">Recusar Consulta</button>
+                            }
+                            @if (consulta.Status == StatusConsulta.Confirmada)
+                            {
+                                <button class="btn btn-primary" @onclick="() => MarcarRealizada(consulta.Id)">Marcar como Realizada</button>
+                                <button class="btn btn-danger" @onclick="() => CancelarConsulta(consulta.Id)">Cancelar Consulta</button>
+                            }
                         }
-                        @if (consulta.Status == StatusConsulta.Confirmada)
+                        @if (AuthService.IsPaciente() && (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
                         {
-                            <button class="btn btn-primary" @onclick="() => MarcarRealizada(consulta.Id)">Marcar como Realizada</button>
                             <button class="btn btn-danger" @onclick="() => CancelarConsulta(consulta.Id)">Cancelar Consulta</button>
                         }
                     </div>
@@ -165,7 +173,18 @@ else
 
     private void Voltar()
     {
-        NavigationManager.NavigateTo($"/consultas/medico/{consulta.MedicoId}");
+        if (AuthService.IsMedico())
+        {
+            NavigationManager.NavigateTo($"/consultas/medico/{consulta.MedicoId}");
+        }
+        else if (AuthService.IsPaciente())
+        {
+            NavigationManager.NavigateTo($"/consultas/paciente/{consulta.PacienteId}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     private async Task AceitarConsulta(int consultaId)
