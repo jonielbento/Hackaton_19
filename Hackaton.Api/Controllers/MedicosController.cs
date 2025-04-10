@@ -42,6 +42,13 @@ namespace Hackaton.Api.Controllers
             return Ok(medico);
         }
 
+        [HttpGet("especialidade/{especialidade}")]
+        public async Task<ActionResult<IEnumerable<MedicoDTO>>> GetByEspecialidade(string especialidade)
+        {
+            var medicos = await _medicoService.GetByEspecialidadeAsync(especialidade);
+            return Ok(medicos);
+        }
+
         [HttpPost]
         public async Task<ActionResult<MedicoDTO>> Create(MedicoRegistroDTO medicoDTO)
         {

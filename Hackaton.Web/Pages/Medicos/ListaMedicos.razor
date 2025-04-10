@@ -18,6 +18,27 @@
         </div>
     }
 
+    <!-- Filtro de Especialidades -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Filtrar por Especialidade</h5>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" @bind="filtroEspecialidade" 
+                           placeholder="Digite a especialidade desejada" />
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary me-2" @onclick="FiltrarPorEspecialidade">
+                        Filtrar
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="LimparFiltro">
+                        Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if (medicos == null)
     {
         <div class="d-flex justify-content-center">
@@ -60,6 +81,7 @@
 @code {
     private List<MedicoDTO> medicos = new();
     private string errorMessage = "";
+    private string filtroEspecialidade = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,6 +109,41 @@
             errorMessage = "Erro ao carregar médicos disponíveis.";
             await JSRuntime.InvokeVoidAsync("console.error", "Erro ao carregar médicos:", ex.Message);
         }
+    }
+
+    private async Task FiltrarPorEspecialidade()
+    {
+        if (string.IsNullOrWhiteSpace(filtroEspecialidade))
+        {
+            await CarregarMedicos();
+            return;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", $"Filtrando médicos pela especialidade: {filtroEspecialidade}");
+            medicos = await Http.GetFromJsonAsync<List<MedicoDTO>>($"api/medicos/especialidade/{filtroEspecialidade}");
+            
+            if (medicos == null || !medicos.Any())
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Nenhum médico encontrado com esta especialidade");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", $"Encontrados {medicos.Count} médicos com esta especialidade");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao filtrar médicos por especialidade.";
+            await JSRuntime.InvokeVoidAsync("console.error", "Erro ao filtrar médicos:", ex.Message);
+        }
+    }
+
+    private async Task LimparFiltro()
+    {
+        filtroEspecialidade = "";
+        await CarregarMedicos();
     }
 
     private void AgendarConsulta(int medicoId)

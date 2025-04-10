@@ -9,6 +9,7 @@ namespace Hackaton.Application.Interfaces
         Task<IEnumerable<MedicoDTO>> GetAllAsync();
         Task<MedicoDTO> GetByIdAsync(int id);
         Task<MedicoDTO> GetByCRMAsync(string crm);
+        Task<IEnumerable<MedicoDTO>> GetByEspecialidadeAsync(string especialidade);
         Task<MedicoDTO> CreateAsync(MedicoRegistroDTO medicoDTO);
         Task<MedicoDTO> UpdateAsync(int id, MedicoDTO medicoDTO);
         Task<bool> DeleteAsync(int id);

@@ -179,5 +179,23 @@ namespace Hackaton.Application.Services
                 Email = medico.Email
             };
         }
+
+        public async Task<IEnumerable<MedicoDTO>> GetByEspecialidadeAsync(string especialidade)
+        {
+            var medicos = await _context.Medicos
+                .Where(m => m.Especialidade.ToLower().Contains(especialidade.ToLower()))
+                .ToListAsync();
+
+            return medicos.Select(m => new MedicoDTO
+            {
+                Id = m.Id,
+                Nome = m.Nome,
+                CRM = m.CRM,
+                Especialidade = m.Especialidade,
+                ValorConsulta = m.ValorConsulta,
+                Telefone = m.Telefone,
+                Email = m.Email
+            });
+        }
     }
 }
