@@ -1,9 +1,12 @@
 @page "/agendar-consulta/{MedicoId:int}"
 @using Hackaton.Application.DTOs
 @using Hackaton.Application.Interfaces
+@using Hackaton.Web.Services
+@using Hackaton.Domain.Entities
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject AuthService AuthService
 
 <PageTitle>Agendar Consulta</PageTitle>
 
@@ -46,12 +49,14 @@
                     @foreach (var slot in GerarSlotsDeHorarios(agendasDisponiveis))
                     {
                         <div class="col-md-3 mb-3">
-                            <div class="card h-100">
+                            <div class="card h-100 @(slot.Disponivel ? "" : "bg-light")">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">@slot.HoraInicio.ToString("HH:mm")</h5>
                                     <p class="card-text text-muted">Duração: 30 minutos</p>
-                                    <button class="btn btn-primary" @onclick="() => SelecionarHorario(slot)">
-                                        Selecionar
+                                    <button class="btn @(slot.Disponivel ? "btn-primary" : "btn-secondary")" 
+                                            @onclick="() => SelecionarHorario(slot)" 
+                                            disabled="@(!slot.Disponivel)">
+                                        @(slot.Disponivel ? "Selecionar" : "Indisponível")
                                     </button>
                                 </div>
                             </div>
@@ -77,6 +82,7 @@
     private List<AgendaDTO> agendasDisponiveis = new();
     private DateTime dataSelecionada = DateTime.Today;
     private string errorMessage = "";
+    private List<ConsultaDTO> consultasAtivas = new List<ConsultaDTO>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,6 +107,7 @@
     {
         try
         {
+            // Carregar todas as agendas do médico para a data selecionada
             agendasDisponiveis = await Http.GetFromJsonAsync<List<AgendaDTO>>($"api/agendas/disponiveis/{MedicoId}/{dataSelecionada:yyyy-MM-dd}");
             
             if (agendasDisponiveis == null || !agendasDisponiveis.Any())
@@ -109,7 +116,39 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("console.log", $"Encontrados {agendasDisponiveis.Count} horários disponíveis");
+                // Forçar a disponibilidade como true para todas as agendas (ignoramos o valor do backend)
+                foreach (var agenda in agendasDisponiveis)
+                {
+                    agenda.Disponivel = true;
+                }
+                
+                // Buscar as consultas específicas para o médico nesta data
+                var consultasNaData = await Http.GetFromJsonAsync<List<ConsultaDTO>>($"api/consultas/medico/{MedicoId}/data/{dataSelecionada:yyyy-MM-dd}");
+                
+                // Marcar apenas as agendas que realmente têm consultas ativas como indisponíveis
+                if (consultasNaData != null && consultasNaData.Any())
+                {
+                    await JSRuntime.InvokeVoidAsync("console.log", $"Encontradas {consultasNaData.Count} consultas para a data {dataSelecionada:yyyy-MM-dd}");
+                    
+                    consultasAtivas = consultasNaData.Where(c => 
+                        c.Status != StatusConsulta.Cancelada && 
+                        c.Status != StatusConsulta.Recusada).ToList();
+                    
+                    await JSRuntime.InvokeVoidAsync("console.log", $"Consultas ativas: {consultasAtivas.Count}");
+                    
+                    // Marcar agendas com consultas como indisponíveis
+                    foreach (var consulta in consultasAtivas)
+                    {
+                        var agenda = agendasDisponiveis.FirstOrDefault(a => a.Id == consulta.AgendaId);
+                        if (agenda != null)
+                        {
+                            await JSRuntime.InvokeVoidAsync("console.log", $"Marcando agenda {agenda.Id} como indisponível devido à consulta {consulta.Id}");
+                            agenda.Disponivel = false;
+                        }
+                    }
+                }
+                
+                await JSRuntime.InvokeVoidAsync("console.log", $"Encontrados {agendasDisponiveis.Count} horários para o médico, sendo {agendasDisponiveis.Count(a => a.Disponivel)} disponíveis");
             }
         }
         catch (Exception ex)
@@ -124,23 +163,46 @@
         public DateTime HoraInicio { get; set; }
         public DateTime HoraFim { get; set; }
         public int AgendaId { get; set; }
+        public bool Disponivel { get; set; }
     }
 
     private List<SlotHorario> GerarSlotsDeHorarios(List<AgendaDTO> agendas)
     {
         var slots = new List<SlotHorario>();
         
-        foreach (var agenda in agendas.Where(a => a.Disponivel))
+        foreach (var agenda in agendas)
         {
             var horaAtual = agenda.DataHoraInicio;
             while (horaAtual.AddMinutes(30) <= agenda.DataHoraFim)
             {
+                // Por padrão, consideramos que todos os slots estão disponíveis
+                bool slotDisponivel = true;
+                
+                // Verificar se existe alguma consulta ativa que começa exatamente neste horário
+                var consultaNoHorario = consultasAtivas.FirstOrDefault(c => 
+                    c.AgendaId == agenda.Id && 
+                    c.DataHora.Year == horaAtual.Year &&
+                    c.DataHora.Month == horaAtual.Month &&
+                    c.DataHora.Day == horaAtual.Day &&
+                    c.DataHora.Hour == horaAtual.Hour && 
+                    c.DataHora.Minute == horaAtual.Minute);
+                
+                // Se encontrou uma consulta neste slot específico, marcar como indisponível
+                if (consultaNoHorario != null)
+                {
+                    slotDisponivel = false;
+                    // Registrar log (sem await para não precisar de async)
+                    JSRuntime.InvokeVoidAsync("console.log", $"Slot {horaAtual:HH:mm} marcado como indisponível por consulta {consultaNoHorario.Id}");
+                }
+                
                 slots.Add(new SlotHorario
                 {
                     HoraInicio = horaAtual,
                     HoraFim = horaAtual.AddMinutes(30),
-                    AgendaId = agenda.Id
+                    AgendaId = agenda.Id,
+                    Disponivel = slotDisponivel
                 });
+                
                 horaAtual = horaAtual.AddMinutes(30);
             }
         }
@@ -152,8 +214,25 @@
     {
         try
         {
+            if (!slot.Disponivel)
+            {
+                errorMessage = "Este horário não está mais disponível";
+                return;
+            }
+
+            if (!AuthService.IsUserAuthenticated() || !AuthService.IsPaciente())
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var pacienteId = AuthService.CurrentUser.UserId;
+
+            await JSRuntime.InvokeVoidAsync("console.log", $"Agendando consulta para paciente {pacienteId} com médico {MedicoId}");
+
             var novaConsulta = new ConsultaRegistroDTO
             {
+                PacienteId = pacienteId,
                 MedicoId = MedicoId,
                 DataHora = slot.HoraInicio,
                 AgendaId = slot.AgendaId
@@ -163,18 +242,19 @@
             
             if (response.IsSuccessStatusCode)
             {
-                NavigationManager.NavigateTo("/minhas-consultas");
+                NavigationManager.NavigateTo($"/consultas/paciente/{pacienteId}");
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 errorMessage = $"Erro ao agendar consulta: {error}";
+                await JSRuntime.InvokeVoidAsync("console.error", "Erro na resposta da API:", error);
             }
         }
         catch (Exception ex)
         {
             errorMessage = "Erro ao agendar consulta.";
-            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
+            await JSRuntime.InvokeVoidAsync("console.error", "Exceção ao agendar consulta:", ex.Message);
         }
     }
 

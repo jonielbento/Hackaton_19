@@ -51,10 +51,18 @@ namespace Hackaton.Api.Controllers
         {
             try
             {
-                var agendas = await _agendaService.GetDisponiveisByMedicoIdAsync(medicoId);
-                var agendasFiltradas = agendas.Where(a => a.DataHoraInicio.Date == data.Date && a.Disponivel).ToList();
+                // Primeiro buscar todas as agendas para a data selecionada, independente do status
+                var agendas = await _agendaService.GetByMedicoIdAsync(medicoId);
+                var agendasDoDia = agendas.Where(a => a.DataHoraInicio.Date == data.Date).ToList();
                 
-                return Ok(agendasFiltradas);
+                // Opcional: Log para depuração
+                Console.WriteLine($"Encontradas {agendasDoDia.Count} agendas para o médico {medicoId} na data {data:yyyy-MM-dd}");
+                foreach (var agenda in agendasDoDia)
+                {
+                    Console.WriteLine($"Agenda {agenda.Id}: {agenda.DataHoraInicio} - {agenda.DataHoraFim}, Disponível: {agenda.Disponivel}");
+                }
+                
+                return Ok(agendasDoDia);
             }
             catch (Exception ex)
             {

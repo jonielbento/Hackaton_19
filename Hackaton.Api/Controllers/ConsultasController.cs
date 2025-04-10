@@ -39,6 +39,14 @@ namespace Hackaton.Api.Controllers
             return Ok(consultas);
         }
 
+        [HttpGet("medico/{medicoId}/data/{data}")]
+        public async Task<ActionResult<IEnumerable<ConsultaDTO>>> GetByMedicoIdEData(int medicoId, DateTime data)
+        {
+            var consultas = await _consultaService.GetByMedicoIdAsync(medicoId);
+            var consultasFiltradas = consultas.Where(c => c.DataHora.Date == data.Date);
+            return Ok(consultasFiltradas);
+        }
+
         [HttpGet("paciente/{pacienteId}")]
         public async Task<ActionResult<IEnumerable<ConsultaDTO>>> GetByPacienteId(int pacienteId)
         {
