@@ -2,6 +2,7 @@
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -30,6 +31,24 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        // Inscrever-se no evento de alteração de estado de autenticação
+        AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private void OnAuthenticationStateChanged()
+    {
+        // Forçar a atualização do componente quando o estado de autenticação mudar
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // Cancelar a inscrição no evento ao descartar o componente
+        AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+
     private async Task HandleLogout()
     {
         var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Deseja realmente sair?");

@@ -14,6 +14,9 @@ namespace Hackaton.Web.Services
         private readonly IJSRuntime _jsRuntime;
         private UserSession _currentUser = new UserSession();
 
+        // Evento para notificar quando o estado de autenticação muda
+        public event Action? AuthenticationStateChanged;
+
         public UserSession CurrentUser => _currentUser;
 
         public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
@@ -33,6 +36,7 @@ namespace Hackaton.Web.Services
                     if (userSession != null && userSession.IsAuthenticated)
                     {
                         _currentUser = userSession;
+                        NotifyAuthenticationStateChanged();
                     }
                     else
                     {
@@ -44,6 +48,11 @@ namespace Hackaton.Web.Services
                     await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "userSession");
                 }
             }
+        }
+
+        private void NotifyAuthenticationStateChanged()
+        {
+            AuthenticationStateChanged?.Invoke();
         }
 
         public async Task<AuthResponseModel?> LoginMedicoAsync(MedicoLoginModel model)
@@ -102,12 +111,14 @@ namespace Hackaton.Web.Services
             };
 
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userSession", JsonSerializer.Serialize(_currentUser));
+            NotifyAuthenticationStateChanged();
         }
 
         public async Task LogoutAsync()
         {
             _currentUser = new UserSession();
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "userSession");
+            NotifyAuthenticationStateChanged();
         }
 
         public bool IsUserAuthenticated()
