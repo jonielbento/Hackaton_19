@@ -117,21 +117,27 @@
                                     <td>
                                         @{
                                             var totalSlots = (int)((agenda.DataHoraFim - agenda.DataHoraInicio).TotalMinutes / 30);
-                                            @totalSlots <text> consultas de 30 minutos</text>
+                                            var consultasAgenda = GetConsultasPorAgenda(agenda);
+                                            var consultasMarcadas = consultasAgenda.Count();
+                                            var slotsDisponiveis = totalSlots - consultasMarcadas;
+                                            
+                                            <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
+                                                <strong>@slotsDisponiveis</strong> de @totalSlots disponíveis
+                                            </span>
                                         }
                                     </td>
                                     <td>
                                         @{
-                                            var consultasAgenda = GetConsultasPorAgenda(agenda);
+                                            var consultasAgendaLista = GetConsultasPorAgenda(agenda);
                                             
-                                            @if (!consultasAgenda.Any())
+                                            @if (!consultasAgendaLista.Any())
                                             {
                                                 <span class="text-muted">Nenhuma consulta</span>
                                             }
                                             else
                                             {
                                                 <ul class="list-unstyled">
-                                                    @foreach (var consulta in consultasAgenda)
+                                                    @foreach (var consulta in consultasAgendaLista)
                                                     {
                                                         <li>
                                                             <span class="badge @GetStatusClass(consulta.Status)">@consulta.Status</span>
