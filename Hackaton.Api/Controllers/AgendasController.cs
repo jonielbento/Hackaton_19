@@ -46,6 +46,22 @@ namespace Hackaton.Api.Controllers
             return Ok(agendas);
         }
 
+        [HttpGet("disponiveis/{medicoId}/{data}")]
+        public async Task<ActionResult<IEnumerable<AgendaDTO>>> GetDisponiveisByMedicoIdEData(int medicoId, DateTime data)
+        {
+            try
+            {
+                var agendas = await _agendaService.GetDisponiveisByMedicoIdAsync(medicoId);
+                var agendasFiltradas = agendas.Where(a => a.DataHoraInicio.Date == data.Date && a.Disponivel).ToList();
+                
+                return Ok(agendasFiltradas);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<AgendaDTO>> Create(AgendaRegistroDTO agendaDTO)
         {

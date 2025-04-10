@@ -1,0 +1,96 @@
+@page "/medicos"
+@using Hackaton.Application.DTOs
+@using Hackaton.Web.Services
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Médicos Disponíveis</PageTitle>
+
+<div class="container">
+    <h3 class="mb-4">Médicos Disponíveis</h3>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (medicos == null)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    }
+    else if (!medicos.Any())
+    {
+        <div class="alert alert-info">
+            Não há médicos disponíveis no momento.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var medico in medicos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Dr(a). @medico.Nome</h5>
+                            <p class="card-text"><strong>Especialidade:</strong> @medico.Especialidade</p>
+                            <p class="card-text"><strong>CRM:</strong> @medico.CRM</p>
+                            <p class="card-text"><strong>Valor da Consulta:</strong> @medico.ValorConsulta.ToString("C")</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary w-100" @onclick="() => AgendarConsulta(medico.Id)">
+                                Agendar Consulta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<MedicoDTO> medicos = new();
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarMedicos();
+    }
+
+    private async Task CarregarMedicos()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Carregando médicos disponíveis");
+            medicos = await Http.GetFromJsonAsync<List<MedicoDTO>>("api/medicos");
+            
+            if (medicos == null || !medicos.Any())
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", "Nenhum médico encontrado");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("console.log", $"Encontrados {medicos.Count} médicos");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao carregar médicos disponíveis.";
+            await JSRuntime.InvokeVoidAsync("console.error", "Erro ao carregar médicos:", ex.Message);
+        }
+    }
+
+    private void AgendarConsulta(int medicoId)
+    {
+        NavigationManager.NavigateTo($"/agendar-consulta/{medicoId}");
+    }
+} 

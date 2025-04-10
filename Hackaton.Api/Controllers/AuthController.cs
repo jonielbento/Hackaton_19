@@ -50,11 +50,11 @@ namespace Hackaton.Api.Controllers
             try
             {
                 if (string.IsNullOrEmpty(loginDTO.Identificacao) || string.IsNullOrEmpty(loginDTO.Senha))
-                    return BadRequest("Identificação e senha são obrigatórios");
+                    return BadRequest("CPF/Email e senha são obrigatórios");
 
                 var paciente = await _pacienteService.AuthenticateAsync(loginDTO);
                 if (paciente == null)
-                    return Unauthorized("Identificação ou senha inválidos");
+                    return Unauthorized("CPF/Email ou senha inválidos");
 
                 return Ok(new AuthResponseDTO
                 {

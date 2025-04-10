@@ -67,7 +67,7 @@
                         <ValidationSummary />
 
                         <div class="mb-3">
-                            <label for="identificacao" class="form-label">CPF</label>
+                            <label for="identificacao" class="form-label">CPF ou Email</label>
                             <InputText id="identificacao" @bind-Value="pacienteLogin.Identificacao" class="form-control" />
                             <ValidationMessage For="@(() => pacienteLogin.Identificacao)" />
                         </div>
@@ -174,7 +174,7 @@
             else
             {
                 await JSRuntime.InvokeVoidAsync("console.log", "Login falhou - resposta nula");
-                errorMessage = "CPF ou senha inválidos";
+                errorMessage = "CPF/Email ou senha inválidos";
             }
         }
         catch (Exception ex)
