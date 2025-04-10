@@ -158,29 +158,28 @@ namespace Hackaton.Application.Services
                     throw new Exception($"Agenda {consultaDTO.AgendaId} não encontrada");
                 }
 
-                if (!agenda.Disponivel)
-                {
-                    Console.WriteLine($"Agenda {consultaDTO.AgendaId} não está mais disponível");
-                    throw new Exception("Este horário não está mais disponível");
-                }
-
-                // Verifica se já existe uma consulta ativa para esta agenda
+                // Modificamos esta verificação para considerar como disponível uma agenda mesmo que não esteja marcada como disponível no campo Disponivel
+                // A disponibilidade real será verificada pela existência de consultas ativas no horário específico
+                
+                // Verifica se já existe uma consulta ativa para esta agenda no horário específico selecionado pelo paciente
                 var consultaExistente = await _context.Consultas
                     .AnyAsync(c => c.AgendaId == consultaDTO.AgendaId && 
-                                  c.Status != StatusConsulta.Cancelada && 
-                                  c.Status != StatusConsulta.Recusada);
+                             c.DataHora.Hour == consultaDTO.DataHora.Hour &&
+                             c.DataHora.Minute == consultaDTO.DataHora.Minute &&
+                             c.Status != StatusConsulta.Cancelada && 
+                             c.Status != StatusConsulta.Recusada);
 
                 if (consultaExistente)
                 {
-                    Console.WriteLine($"Já existe uma consulta ativa para a agenda {consultaDTO.AgendaId}");
+                    Console.WriteLine($"Já existe uma consulta ativa para a agenda {consultaDTO.AgendaId} no horário {consultaDTO.DataHora:HH:mm}");
                     throw new Exception("Este horário já está reservado para outra consulta");
                 }
 
-                // Verifica se a data da agenda já passou
-                if (agenda.DataHoraInicio.Date < DateTime.Now.Date)
+                // Verifica se a data/hora da consulta já passou
+                if (consultaDTO.DataHora < DateTime.Now)
                 {
-                    Console.WriteLine($"A data da agenda {consultaDTO.AgendaId} já passou");
-                    throw new Exception("Não é possível agendar consultas para datas passadas");
+                    Console.WriteLine($"A data/hora {consultaDTO.DataHora} já passou");
+                    throw new Exception("Não é possível agendar consultas para datas/horários passados");
                 }
 
                 var consulta = new Consulta
@@ -188,15 +187,13 @@ namespace Hackaton.Application.Services
                     PacienteId = consultaDTO.PacienteId,
                     MedicoId = consultaDTO.MedicoId,
                     AgendaId = consultaDTO.AgendaId,
-                    DataHora = agenda.DataHoraInicio,
+                    DataHora = consultaDTO.DataHora,
                     Status = StatusConsulta.Agendada,
                     Valor = medico.ValorConsulta
                 };
 
                 Console.WriteLine($"Criando consulta: PacienteId={consulta.PacienteId}, MedicoId={consulta.MedicoId}, AgendaId={consulta.AgendaId}, DataHora={consulta.DataHora}");
 
-                agenda.Disponivel = false;
-                _context.Agendas.Update(agenda);
                 _context.Consultas.Add(consulta);
                 
                 await _context.SaveChangesAsync();
