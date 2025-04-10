@@ -16,6 +16,10 @@ namespace Hackaton.Web.Models
         [StringLength(50, ErrorMessage = "A especialidade deve ter no máximo 50 caracteres")]
         public string Especialidade { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "O valor da consulta é obrigatório")]
+        [Range(0.01, 9999.99, ErrorMessage = "O valor da consulta deve ser maior que zero e menor que 10.000")]
+        public decimal ValorConsulta { get; set; }
+
         [Required(ErrorMessage = "A senha é obrigatória")]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter entre 6 e 100 caracteres")]
         public string Senha { get; set; } = string.Empty;

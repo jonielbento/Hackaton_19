@@ -21,6 +21,7 @@ namespace Hackaton.Web.Services
                     model.Nome,
                     model.CRM,
                     model.Especialidade,
+                    model.ValorConsulta,
                     model.Senha
                 });
 

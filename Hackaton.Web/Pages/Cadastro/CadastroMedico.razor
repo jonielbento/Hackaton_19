@@ -44,6 +44,12 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="valorConsulta" class="form-label">Valor da Consulta (R$)</label>
+                        <InputNumber id="valorConsulta" @bind-Value="medicoRegistro.ValorConsulta" class="form-control" />
+                        <ValidationMessage For="@(() => medicoRegistro.ValorConsulta)" />
+                    </div>
+
+                    <div class="mb-3">
                         <label for="senha" class="form-label">Senha</label>
                         <InputText id="senha" @bind-Value="medicoRegistro.Senha" class="form-control" type="password" />
                         <ValidationMessage For="@(() => medicoRegistro.Senha)" />
