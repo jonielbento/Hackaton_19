@@ -79,95 +79,111 @@
             <div class="card-body">
                 @if (agendas == null)
                 {
-                    <p><em>Carregando horários...</em></p>
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p><em>Carregando horários...</em></p>
+                    </div>
                 }
                 else if (!agendas.Any())
                 {
-                    <p>Você não possui horários cadastrados.</p>
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-calendar-x mb-2" style="font-size: 2rem;"></i>
+                        <p>Você não possui horários cadastrados.</p>
+                    </div>
                 }
                 else
                 {
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Período</th>
-                                <th>Status</th>
-                                <th>Consultas Disponíveis</th>
-                                <th>Consultas Marcadas</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var agenda in agendasFiltradas)
-                            {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-primary text-center">
                                 <tr>
-                                    <td>@agenda.DataHoraInicio.ToString("dd/MM/yyyy")</td>
-                                    <td>@agenda.DataHoraInicio.ToString("HH:mm") - @agenda.DataHoraFim.ToString("HH:mm")</td>
-                                    <td>
-                                        @if (agenda.Disponivel)
-                                        {
-                                            <span class="badge bg-success">Disponível</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">Reservado</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @{
-                                            var totalSlots = (int)((agenda.DataHoraFim - agenda.DataHoraInicio).TotalMinutes / 30);
-                                            var consultasAgenda = GetConsultasPorAgenda(agenda);
-                                            var consultasMarcadas = consultasAgenda.Count();
-                                            var slotsDisponiveis = totalSlots - consultasMarcadas;
-
-                                            if (totalSlots == slotsDisponiveis)
-                                            {
-                                                <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">                                                
-                                                    <strong>@slotsDisponiveis</strong> consultas disponíveis
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
-                                                    <strong>@slotsDisponiveis</strong> consultas marcadas de @totalSlots disponíveis
-                                                </span>
-                                            }
-                                        }
-                                    </td>
-                                    <td>
-                                        @{
-                                            var consultasAgendaLista = GetConsultasPorAgenda(agenda);
-                                            
-                                            @if (!consultasAgendaLista.Any())
-                                            {
-                                                <span class="text-muted">Nenhuma consulta</span>
-                                            }
-                                            else
-                                            {
-                                                <ul class="list-unstyled">
-                                                    @foreach (var consulta in consultasAgendaLista)
-                                                    {
-                                                        <li>
-                                                            <span class="badge @GetStatusClass(consulta.Status)">@consulta.Status</span>
-                                                            @consulta.DataHora.ToString("HH:mm") - @consulta.NomePaciente
-                                                            <a href="/consultas/detalhes/@consulta.Id" class="btn btn-sm btn-info">Detalhes</a>
-                                                        </li>
-                                                    }
-                                                </ul>
-                                            }
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (agenda.Disponivel)
-                                        {
-                                            <button class="btn btn-danger btn-sm" @onclick="() => ExcluirHorario(agenda.Id)">Excluir</button>
-                                        }
-                                    </td>
+                                    <th>Data</th>
+                                    <th>Período</th>
+                                    <th>Status</th>
+                                    <th>Consultas Disponíveis</th>
+                                    <th>Consultas Marcadas</th>
+                                    <th>Ações</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var agenda in agendasFiltradas)
+                                {
+                                    <tr>
+                                        <td class="text-center align-middle">@agenda.DataHoraInicio.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-center align-middle">@agenda.DataHoraInicio.ToString("HH:mm") - @agenda.DataHoraFim.ToString("HH:mm")</td>
+                                        <td class="text-center align-middle">
+                                            @if (agenda.Disponivel)
+                                            {
+                                                <span class="badge bg-success">Disponível</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Reservado</span>
+                                            }
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            @{
+                                                var totalSlots = (int)((agenda.DataHoraFim - agenda.DataHoraInicio).TotalMinutes / 30);
+                                                var consultasAgenda = GetConsultasPorAgenda(agenda);
+                                                var consultasMarcadas = consultasAgenda.Count();
+                                                var slotsDisponiveis = totalSlots - consultasMarcadas;
+
+                                                if (totalSlots == slotsDisponiveis)
+                                                {
+                                                    <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">                                                
+                                                        <strong>@slotsDisponiveis</strong> consultas disponíveis
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
+                                                        <strong>@slotsDisponiveis</strong> consultas marcadas de @totalSlots disponíveis
+                                                    </span>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            @{
+                                                var consultasAgendaLista = GetConsultasPorAgenda(agenda);
+                                                
+                                                @if (!consultasAgendaLista.Any())
+                                                {
+                                                    <span class="text-muted">Nenhuma consulta</span>
+                                                }
+                                                else
+                                                {
+                                                    <div class="d-flex justify-content-center">
+                                                        <div class="text-center">
+                                                            <ul class="list-group" style="max-width: 350px;">
+                                                                @foreach (var consulta in consultasAgendaLista)
+                                                                {
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2">
+                                                                        <div>
+                                                                            <span class="badge @GetStatusClass(consulta.Status) me-2">@consulta.Status</span>
+                                                                            <strong>@consulta.DataHora.ToString("HH:mm")</strong> - @consulta.NomePaciente
+                                                                        </div>
+                                                                        <a href="/consultas/detalhes/@consulta.Id" class="btn btn-sm btn-info ms-2">Detalhes</a>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            @if (agenda.Disponivel)
+                                            {
+                                                <button class="btn btn-danger btn-sm" @onclick="() => ExcluirHorario(agenda.Id)">Excluir</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
             </div>
         </div>
