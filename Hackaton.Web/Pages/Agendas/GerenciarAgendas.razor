@@ -158,21 +158,38 @@
                                                         }
                                                         else
                                                         {
-                                                            <div class="mx-auto" style="width: 100%; max-width: 450px;">
-                                                                <ul class="list-group" style="margin: 0 auto;">
-                                                                    @foreach (var consulta in consultasAgendaLista)
-                                                                    {
-                                                                        <li class="list-group-item d-flex align-items-center mb-2 border rounded">
-                                                                            <div class="d-flex align-items-center flex-grow-1 justify-content-center">
-                                                                                <div class="text-center">
-                                                                                    <span class="badge @GetStatusClass(consulta.Status) me-2">@consulta.Status</span>
-                                                                                    <strong>@consulta.DataHora.ToString("HH:mm")</strong> - @consulta.NomePaciente
-                                                                                </div>
-                                                                                <a href="/consultas/detalhes/@consulta.Id" class="btn btn-sm btn-info ms-3">Detalhes</a>
-                                                                            </div>
-                                                                        </li>
-                                                                    }
-                                                                </ul>
+                                                            <div class="mx-auto" style="width: 100%; max-width: 600px;">
+                                                                <div class="border rounded p-2">
+                                                                    <table class="table table-striped table-hover mb-0">
+                                                                        <thead class="table-light">
+                                                                            <tr class="text-center">
+                                                                                <th class="py-2">Status</th>
+                                                                                <th class="py-2">Horário</th>
+                                                                                <th class="py-2">Paciente</th>
+                                                                                <th class="py-2">Ação</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @foreach (var consulta in consultasAgendaLista)
+                                                                            {
+                                                                                <tr class="text-center align-middle">
+                                                                                    <td class="py-2">
+                                                                                        <span class="badge @GetStatusClass(consulta.Status)">@consulta.Status</span>
+                                                                                    </td>
+                                                                                    <td class="py-2">
+                                                                                        <strong>@consulta.DataHora.ToString("HH:mm")</strong>
+                                                                                    </td>
+                                                                                    <td class="py-2">
+                                                                                        @consulta.NomePaciente
+                                                                                    </td>
+                                                                                    <td class="py-2">
+                                                                                        <a href="/consultas/detalhes/@consulta.Id" class="btn btn-sm btn-info">Detalhes</a>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            }
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
                                                             </div>
                                                         }
                                                     }
