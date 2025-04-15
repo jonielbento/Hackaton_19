@@ -143,7 +143,7 @@
                                                         else
                                                         {
                                                             <span class="@(slotsDisponiveis > 0 ? "text-success" : "text-danger")">
-                                                                <strong>@slotsDisponiveis</strong> consultas marcadas de @totalSlots disponíveis
+                                                                <strong>@consultasMarcadas</strong> consultas marcadas de @totalSlots disponíveis
                                                             </span>
                                                         }
                                                     }
@@ -197,7 +197,8 @@
                                                 <td class="text-center align-middle">
                                                     @if (agenda.Disponivel)
                                                     {
-                                                        <div class="d-flex justify-content-center">
+                                                        <div class="d-flex justify-content-center gap-2">
+                                                            <button class="btn btn-primary btn-sm" @onclick="() => AbrirModalEdicao(agenda)">Editar</button>
                                                             <button class="btn btn-danger btn-sm" @onclick="() => ExcluirHorario(agenda.Id)">Excluir</button>
                                                         </div>
                                                     }
@@ -215,6 +216,95 @@
     </div>
 </div>
 
+@if (agendaEmEdicao != null)
+{
+    <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Horário de Atendimento</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalEdicao"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(edicaoErrorMessage))
+                    {
+                        <div class="alert alert-danger">
+                            @edicaoErrorMessage
+                        </div>
+                    }
+                    <EditForm Model="@agendaEmEdicao" OnValidSubmit="SalvarEdicao">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        
+                        <div class="mb-3">
+                            <label for="dataEdicao" class="form-label">Data</label>
+                            <InputDate id="dataEdicao" class="form-control" @bind-Value="dataEdicao" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="horaInicioEdicao" class="form-label">Horário de Início do Atendimento</label>
+                            <InputSelect id="horaInicioEdicao" class="form-select" @bind-Value="horaInicioEdicao">
+                                @foreach (var hora in horasDisponiveis)
+                                {
+                                    <option value="@hora">@hora</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="horaFimEdicao" class="form-label">Horário de Fim do Atendimento</label>
+                            <InputSelect id="horaFimEdicao" class="form-select" @bind-Value="horaFimEdicao">
+                                @foreach (var hora in horasDisponiveis.Where(h => string.Compare(h, horaInicioEdicao) > 0))
+                                {
+                                    <option value="@hora">@hora</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            A edição de horários pode afetar consultas já marcadas.
+                        </div>
+                        
+                        @{
+                            var consultasExistentes = GetConsultasPorAgenda(agendaEmEdicao);
+                            if (consultasExistentes.Any())
+                            {
+                                <div class="mb-3">
+                                    <h6 class="mb-2">Consultas marcadas neste horário:</h6>
+                                    <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                                        <ul class="list-group list-group-flush">
+                                            @foreach (var consulta in consultasExistentes)
+                                            {
+                                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                    <div>
+                                                        <span class="badge @GetStatusClass(consulta.Status) me-2">@consulta.Status</span>
+                                                        <strong>@consulta.DataHora.ToString("HH:mm")</strong> - @consulta.NomePaciente
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">
+                                        Certifique-se que o novo horário cobre todas as consultas existentes.
+                                    </small>
+                                </div>
+                            }
+                        }
+                        
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" @onclick="FecharModalEdicao">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public int MedicoId { get; set; }
@@ -227,6 +317,11 @@
     private string horaFim = "18:00";
     private DateTime? filtroData = null;
     private string errorMessage = "";
+    private string edicaoErrorMessage = "";
+    private AgendaDTO agendaEmEdicao;
+    private DateTime dataEdicao;
+    private string horaInicioEdicao;
+    private string horaFimEdicao;
 
     private List<string> horasDisponiveis = new List<string>
     {
@@ -367,6 +462,101 @@
         {
             await JSRuntime.InvokeVoidAsync("console.log", "Exceção ao excluir horário:", ex.Message);
             errorMessage = $"Erro ao excluir horário: {ex.Message}";
+        }
+    }
+
+    private void AbrirModalEdicao(AgendaDTO agenda)
+    {
+        edicaoErrorMessage = "";
+        agendaEmEdicao = agenda;
+        dataEdicao = agenda.DataHoraInicio.Date;
+        horaInicioEdicao = agenda.DataHoraInicio.ToString("HH:mm");
+        horaFimEdicao = agenda.DataHoraFim.ToString("HH:mm");
+    }
+
+    private void FecharModalEdicao()
+    {
+        agendaEmEdicao = null;
+    }
+
+    private async Task SalvarEdicao()
+    {
+        try
+        {
+            edicaoErrorMessage = "";
+            
+            // Converter string de hora para TimeSpan
+            var horaInicioSpan = TimeSpan.Parse(horaInicioEdicao);
+            var horaFimSpan = TimeSpan.Parse(horaFimEdicao);
+
+            // Verificar se existe alguma consulta para esse período
+            var consultasAgendaLista = GetConsultasPorAgenda(agendaEmEdicao);
+            
+            if (consultasAgendaLista.Any())
+            {
+                // Verificar se a nova data é diferente da original
+                bool mudancaDeData = dataEdicao.Date != agendaEmEdicao.DataHoraInicio.Date;
+                
+                // Verificar se o novo horário cobre todas as consultas existentes
+                bool horarioReduzido = horaInicioSpan > agendaEmEdicao.DataHoraInicio.TimeOfDay || 
+                                       horaFimSpan < agendaEmEdicao.DataHoraFim.TimeOfDay;
+                
+                if (mudancaDeData || horarioReduzido)
+                {
+                    // Consultas agendadas dentro do período
+                    var primeiraConsulta = consultasAgendaLista.Min(c => c.DataHora.TimeOfDay);
+                    var ultimaConsulta = consultasAgendaLista.Max(c => c.DataHora.TimeOfDay);
+                    
+                    if (mudancaDeData)
+                    {
+                        edicaoErrorMessage = "Não é possível alterar a data pois existem consultas agendadas para esse horário.";
+                        return;
+                    }
+                    
+                    if (primeiraConsulta < horaInicioSpan || ultimaConsulta > horaFimSpan)
+                    {
+                        edicaoErrorMessage = "O novo horário não cobre todas as consultas já agendadas. Ajuste o horário ou cancele as consultas afetadas.";
+                        return;
+                    }
+                }
+            }
+
+            // Criar os DateTimes combinando a data com as horas
+            var novoInicioDateTime = dataEdicao.Date.Add(horaInicioSpan);
+            var novoFimDateTime = dataEdicao.Date.Add(horaFimSpan);
+            
+            // Criar um novo objeto para enviar apenas os campos necessários
+            var agendaAtualizada = new
+            {
+                Id = agendaEmEdicao.Id,
+                MedicoId = agendaEmEdicao.MedicoId,
+                DataHoraInicio = novoInicioDateTime,
+                DataHoraFim = novoFimDateTime,
+                Disponivel = agendaEmEdicao.Disponivel
+            };
+
+            await JSRuntime.InvokeVoidAsync("console.log", "Enviando agenda editada:", agendaAtualizada);
+
+            var response = await Http.PutAsJsonAsync($"api/agendas/{agendaEmEdicao.Id}", agendaAtualizada);
+            
+            await JSRuntime.InvokeVoidAsync("console.log", "Status code:", response.StatusCode);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                await CarregarAgendas();
+                FecharModalEdicao();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeVoidAsync("console.log", "Erro ao salvar alterações:", error);
+                edicaoErrorMessage = $"Erro ao salvar alterações: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "Exceção ao salvar alterações:", ex.Message);
+            edicaoErrorMessage = $"Erro ao salvar alterações: {ex.Message}";
         }
     }
 }
