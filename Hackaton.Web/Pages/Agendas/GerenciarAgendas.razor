@@ -532,7 +532,8 @@
                 MedicoId = agendaEmEdicao.MedicoId,
                 DataHoraInicio = novoInicioDateTime,
                 DataHoraFim = novoFimDateTime,
-                Disponivel = agendaEmEdicao.Disponivel
+                Disponivel = agendaEmEdicao.Disponivel,
+                NomeMedico = agendaEmEdicao.NomeMedico // Incluindo o campo NomeMedico que é obrigatório
             };
 
             await JSRuntime.InvokeVoidAsync("console.log", "Enviando agenda editada:", agendaAtualizada);
