@@ -203,7 +203,15 @@ else
 
         try
         {
-            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/cancelar", justificativa);
+            var atualizacaoDTO = new ConsultaAtualizacaoDTO
+                {
+                    Id = consultaIdSelecionada,
+                    Status = StatusConsulta.Cancelada,
+                    Justificativa = justificativa
+                };
+
+
+            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/cancelar", atualizacaoDTO);
             if (response.IsSuccessStatusCode)
             {
                 await CarregarConsultas();
