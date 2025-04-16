@@ -31,9 +31,35 @@ namespace Hackaton.Infrastructure.Repositories
             if (agenda == null)
                 return false;
 
-            _context.Agendas.Remove(agenda);
-            await _context.SaveChangesAsync();
-            return true;
+            // Verificar se a agenda está associada a alguma consulta ativa antes de tentar excluir
+            var agendaAssociadaConsulta = await VerificarAgendaAssociadaConsultaAsync(id);
+            if (agendaAssociadaConsulta)
+                throw new Exception("Não é possível excluir este horário pois ele está associado a uma consulta ativa");
+
+            try
+            {
+                // Obter todas as consultas associadas a esta agenda (canceladas ou recusadas)
+                var consultasAssociadas = await _context.Consultas
+                    .Where(c => c.AgendaId == id && (c.Status == StatusConsulta.Cancelada || c.Status == StatusConsulta.Recusada))
+                    .ToListAsync();
+
+                // Remover todas as consultas canceladas ou recusadas associadas a esta agenda
+                if (consultasAssociadas.Any())
+                {
+                    _context.Consultas.RemoveRange(consultasAssociadas);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Agora podemos remover a agenda com segurança
+                _context.Agendas.Remove(agenda);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Capturar e relançar a exceção com uma mensagem mais clara
+                throw new Exception($"Erro ao excluir agenda: {ex.Message}", ex);
+            }
         }
 
         public async Task<IEnumerable<Agenda>> GetAllAsync()
@@ -128,8 +154,22 @@ namespace Hackaton.Infrastructure.Repositories
 
         public async Task<bool> VerificarAgendaAssociadaConsultaAsync(int agendaId)
         {
-            var consulta = await _context.Consultas.FirstOrDefaultAsync(c => c.AgendaId == agendaId);
-            return consulta != null;
+            // Verificar se existem consultas associadas a esta agenda
+            var consultasAssociadas = await _context.Consultas
+                .Where(c => c.AgendaId == agendaId)
+                .ToListAsync();
+
+            // Se não existem consultas, a agenda não está associada
+            if (!consultasAssociadas.Any())
+                return false;
+
+            // Verificar se TODAS as consultas estão canceladas ou recusadas
+            var todasCanceladasOuRecusadas = consultasAssociadas
+                .All(c => c.Status == StatusConsulta.Cancelada || c.Status == StatusConsulta.Recusada);
+
+            // Se todas estão canceladas ou recusadas, retorna false (não está associada a consultas ativas)
+            // Se pelo menos uma não está cancelada ou recusada, retorna true (está associada a consulta ativa)
+            return !todasCanceladasOuRecusadas;
         }
     }
 }
