@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura do Sistema de Agendamento Médico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .svg-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .description {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #0066cc;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Arquitetura do Sistema de Agendamento Médico</h1>
+        
+        <div class="svg-container">
+            <object data="arquitetura_sistema.svg" type="image/svg+xml" width="100%" height="1200">
+                Seu navegador não suporta SVG
+            </object>
+        </div>
+        
+        <div class="description">
+            <h2>Descrição da Arquitetura</h2>
+            <p>O sistema de agendamento médico foi desenvolvido seguindo os princípios da arquitetura limpa (Clean Architecture) e padrão em camadas, proporcionando separação de responsabilidades e facilitando a manutenção e evolução do software.</p>
+            
+            <h3>Camadas da Aplicação</h3>
+            <ul>
+                <li><strong>Camada de Apresentação (Hackaton.Web):</strong> Interface do usuário desenvolvida com Blazor WebAssembly, contendo páginas, componentes e serviços para comunicação com a API.</li>
+                <li><strong>Camada de API (Hackaton.Api):</strong> Expõe endpoints RESTful para serem consumidos pela camada de apresentação, implementando controllers para cada entidade do sistema.</li>
+                <li><strong>Camada de Aplicação (Hackaton.Application):</strong> Contém a lógica de negócio, serviços e DTOs (Data Transfer Objects) que fazem a ponte entre a API e o domínio.</li>
+                <li><strong>Camada de Domínio (Hackaton.Domain):</strong> Núcleo da aplicação, contendo as entidades de negócio, interfaces e regras de domínio.</li>
+                <li><strong>Camada de Infraestrutura (Hackaton.Infrastructure):</strong> Implementa o acesso a dados, repositórios e migrações do banco de dados.</li>
+            </ul>
+            
+            <h3>Principais Entidades</h3>
+            <ul>
+                <li><strong>Médico:</strong> Profissional de saúde com especialidade e valor de consulta.</li>
+                <li><strong>Paciente:</strong> Usuário que agenda consultas médicas.</li>
+                <li><strong>Consulta:</strong> Agendamento entre médico e paciente, com status e valor.</li>
+                <li><strong>Agenda:</strong> Disponibilidade de horários do médico para consultas.</li>
+            </ul>
+            
+            <h3>Fluxo de Dados</h3>
+            <p>O fluxo de dados segue o princípio da dependência, onde as camadas externas dependem das camadas internas, mas nunca o contrário. A comunicação entre camadas é feita através de interfaces e DTOs, garantindo o baixo acoplamento.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Para visualizar este diagrama em PDF, utilize a funcionalidade de impressão do navegador e selecione "Salvar como PDF".</p>
+        </div>
+    </div>
+</body>
+</html>

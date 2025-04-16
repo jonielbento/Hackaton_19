@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1200" viewBox="0 0 1000 1200">
+  <!-- Estilos -->
+  <defs>
+    <style>
+      .layer { fill: #f0f0f0; stroke: #333; stroke-width: 2; }
+      .component { fill: #fff; stroke: #333; stroke-width: 1.5; }
+      .entity { fill: #e6f7ff; stroke: #0066cc; stroke-width: 1.5; }
+      .arrow { stroke: #666; stroke-width: 1.5; marker-end: url(#arrowhead); }
+      .label { font-family: Arial; font-size: 14px; }
+      .layer-title { font-family: Arial; font-size: 18px; font-weight: bold; }
+      .component-title { font-family: Arial; font-size: 14px; font-weight: bold; }
+      .entity-title { font-family: Arial; font-size: 12px; font-weight: bold; }
+      .entity-prop { font-family: Arial; font-size: 10px; }
+      .note { font-family: Arial; font-size: 12px; font-style: italic; }
+    </style>
+    
+    <!-- Marcador de seta -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+    </marker>
+  </defs>
+  
+  <!-- Título do Diagrama -->
+  <text x="500" y="40" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold">Arquitetura do Sistema de Agendamento Médico</text>
+  
+  <!-- Camada de Apresentação (Web) -->
+  <rect x="50" y="80" width="900" height="200" rx="10" ry="10" class="layer" />
+  <text x="500" y="100" text-anchor="middle" class="layer-title">Camada de Apresentação (Hackaton.Web - Blazor)</text>
+  
+  <!-- Componentes da Camada Web -->
+  <rect x="100" y="120" width="180" height="120" rx="5" ry="5" class="component" />
+  <text x="190" y="140" text-anchor="middle" class="component-title">Páginas</text>
+  <text x="190" y="160" text-anchor="middle" class="label">Login.razor</text>
+  <text x="190" y="180" text-anchor="middle" class="label">Consultas/*.razor</text>
+  <text x="190" y="200" text-anchor="middle" class="label">Medicos/*.razor</text>
+  <text x="190" y="220" text-anchor="middle" class="label">Cadastro/*.razor</text>
+  
+  <rect x="320" y="120" width="180" height="120" rx="5" ry="5" class="component" />
+  <text x="410" y="140" text-anchor="middle" class="component-title">Componentes</text>
+  <text x="410" y="160" text-anchor="middle" class="label">Shared/*.razor</text>
+  <text x="410" y="180" text-anchor="middle" class="label">Layout/*.razor</text>
+  <text x="410" y="200" text-anchor="middle" class="label">Components/*.razor</text>
+  
+  <rect x="540" y="120" width="180" height="120" rx="5" ry="5" class="component" />
+  <text x="630" y="140" text-anchor="middle" class="component-title">Serviços Web</text>
+  <text x="630" y="160" text-anchor="middle" class="label">HttpClient</text>
+  <text x="630" y="180" text-anchor="middle" class="label">Services/*.cs</text>
+  <text x="630" y="200" text-anchor="middle" class="label">Models/*.cs</text>
+  
+  <rect x="760" y="120" width="180" height="120" rx="5" ry="5" class="component" />
+  <text x="850" y="140" text-anchor="middle" class="component-title">Recursos</text>
+  <text x="850" y="160" text-anchor="middle" class="label">wwwroot/css</text>
+  <text x="850" y="180" text-anchor="middle" class="label">wwwroot/js</text>
+  <text x="850" y="200" text-anchor="middle" class="label">wwwroot/images</text>
+  
+  <!-- Camada de API -->
+  <rect x="50" y="320" width="900" height="160" rx="10" ry="10" class="layer" />
+  <text x="500" y="340" text-anchor="middle" class="layer-title">Camada de API (Hackaton.Api)</text>
+  
+  <!-- Componentes da Camada API -->
+  <rect x="100" y="360" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="190" y="380" text-anchor="middle" class="component-title">Controllers</text>
+  <text x="190" y="400" text-anchor="middle" class="label">AuthController</text>
+  <text x="190" y="420" text-anchor="middle" class="label">MedicosController</text>
+  <text x="190" y="440" text-anchor="middle" class="label">PacientesController</text>
+  
+  <rect x="320" y="360" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="410" y="380" text-anchor="middle" class="component-title">Controllers</text>
+  <text x="410" y="400" text-anchor="middle" class="label">ConsultasController</text>
+  <text x="410" y="420" text-anchor="middle" class="label">AgendasController</text>
+  
+  <rect x="540" y="360" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="630" y="380" text-anchor="middle" class="component-title">Configuração</text>
+  <text x="630" y="400" text-anchor="middle" class="label">Program.cs</text>
+  <text x="630" y="420" text-anchor="middle" class="label">appsettings.json</text>
+  <text x="630" y="440" text-anchor="middle" class="label">Middleware</text>
+  
+  <rect x="760" y="360" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="850" y="380" text-anchor="middle" class="component-title">Segurança</text>
+  <text x="850" y="400" text-anchor="middle" class="label">Autenticação</text>
+  <text x="850" y="420" text-anchor="middle" class="label">Autorização</text>
+  <text x="850" y="440" text-anchor="middle" class="label">JWT</text>
+  
+  <!-- Camada de Aplicação -->
+  <rect x="50" y="520" width="900" height="160" rx="10" ry="10" class="layer" />
+  <text x="500" y="540" text-anchor="middle" class="layer-title">Camada de Aplicação (Hackaton.Application)</text>
+  
+  <!-- Componentes da Camada de Aplicação -->
+  <rect x="100" y="560" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="190" y="580" text-anchor="middle" class="component-title">DTOs</text>
+  <text x="190" y="600" text-anchor="middle" class="label">MedicoDTO</text>
+  <text x="190" y="620" text-anchor="middle" class="label">PacienteDTO</text>
+  <text x="190" y="640" text-anchor="middle" class="label">ConsultaDTO</text>
+  
+  <rect x="320" y="560" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="410" y="580" text-anchor="middle" class="component-title">Interfaces</text>
+  <text x="410" y="600" text-anchor="middle" class="label">IMedicoService</text>
+  <text x="410" y="620" text-anchor="middle" class="label">IPacienteService</text>
+  <text x="410" y="640" text-anchor="middle" class="label">IConsultaService</text>
+  
+  <rect x="540" y="560" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="630" y="580" text-anchor="middle" class="component-title">Serviços</text>
+  <text x="630" y="600" text-anchor="middle" class="label">MedicoService</text>
+  <text x="630" y="620" text-anchor="middle" class="label">PacienteService</text>
+  <text x="630" y="640" text-anchor="middle" class="label">ConsultaService</text>
+  
+  <rect x="760" y="560" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="850" y="580" text-anchor="middle" class="component-title">Serviços Auxiliares</text>
+  <text x="850" y="600" text-anchor="middle" class="label">TokenService</text>
+  <text x="850" y="620" text-anchor="middle" class="label">AgendaService</text>
+  <text x="850" y="640" text-anchor="middle" class="label">AuthDTO</text>
+  
+  <!-- Camada de Domínio -->
+  <rect x="50" y="720" width="900" height="160" rx="10" ry="10" class="layer" />
+  <text x="500" y="740" text-anchor="middle" class="layer-title">Camada de Domínio (Hackaton.Domain)</text>
+  
+  <!-- Componentes da Camada de Domínio -->
+  <rect x="100" y="760" width="180" height="100" rx="5" ry="5" class="entity" />
+  <text x="190" y="780" text-anchor="middle" class="entity-title">Medico</text>
+  <text x="190" y="795" text-anchor="middle" class="entity-prop">Id, Nome, CRM</text>
+  <text x="190" y="810" text-anchor="middle" class="entity-prop">Senha, Especialidade</text>
+  <text x="190" y="825" text-anchor="middle" class="entity-prop">ValorConsulta</text>
+  <text x="190" y="840" text-anchor="middle" class="entity-prop">Agendas, Consultas</text>
+  
+  <rect x="320" y="760" width="180" height="100" rx="5" ry="5" class="entity" />
+  <text x="410" y="780" text-anchor="middle" class="entity-title">Paciente</text>
+  <text x="410" y="795" text-anchor="middle" class="entity-prop">Id, Nome, CPF, Senha</text>
+  <text x="410" y="810" text-anchor="middle" class="entity-prop">Email, Telefone</text>
+  <text x="410" y="825" text-anchor="middle" class="entity-prop">DataNascimento</text>
+  <text x="410" y="840" text-anchor="middle" class="entity-prop">Consultas</text>
+  
+  <rect x="540" y="760" width="180" height="100" rx="5" ry="5" class="entity" />
+  <text x="630" y="780" text-anchor="middle" class="entity-title">Consulta</text>
+  <text x="630" y="795" text-anchor="middle" class="entity-prop">Id, PacienteId, MedicoId</text>
+  <text x="630" y="810" text-anchor="middle" class="entity-prop">AgendaId, DataHora</text>
+  <text x="630" y="825" text-anchor="middle" class="entity-prop">Status, Valor, Justificativa</text>
+  <text x="630" y="840" text-anchor="middle" class="entity-prop">Paciente, Medico, Agenda</text>
+  
+  <rect x="760" y="760" width="180" height="100" rx="5" ry="5" class="entity" />
+  <text x="850" y="780" text-anchor="middle" class="entity-title">Agenda</text>
+  <text x="850" y="795" text-anchor="middle" class="entity-prop">Id, MedicoId</text>
+  <text x="850" y="810" text-anchor="middle" class="entity-prop">DataHoraInicio</text>
+  <text x="850" y="825" text-anchor="middle" class="entity-prop">DataHoraFim</text>
+  <text x="850" y="840" text-anchor="middle" class="entity-prop">Disponivel, Medico</text>
+  
+  <!-- Camada de Infraestrutura -->
+  <rect x="50" y="920" width="900" height="160" rx="10" ry="10" class="layer" />
+  <text x="500" y="940" text-anchor="middle" class="layer-title">Camada de Infraestrutura (Hackaton.Infrastructure)</text>
+  
+  <!-- Componentes da Camada de Infraestrutura -->
+  <rect x="100" y="960" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="190" y="980" text-anchor="middle" class="component-title">Contexto</text>
+  <text x="190" y="1000" text-anchor="middle" class="label">HackatonDbContext</text>
+  <text x="190" y="1020" text-anchor="middle" class="label">Migrations</text>
+  
+  <rect x="320" y="960" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="410" y="980" text-anchor="middle" class="component-title">Repositórios</text>
+  <text x="410" y="1000" text-anchor="middle" class="label">MedicoRepository</text>
+  <text x="410" y="1020" text-anchor="middle" class="label">PacienteRepository</text>
+  <text x="410" y="1040" text-anchor="middle" class="label">ConsultaRepository</text>
+  
+  <rect x="540" y="960" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="630" y="980" text-anchor="middle" class="component-title">Repositórios</text>
+  <text x="630" y="1000" text-anchor="middle" class="label">AgendaRepository</text>
+  
+  <rect x="760" y="960" width="180" height="100" rx="5" ry="5" class="component" />
+  <text x="850" y="980" text-anchor="middle" class="component-title">Banco de Dados</text>
+  <text x="850" y="1000" text-anchor="middle" class="label">SQL Server</text>
+  <text x="850" y="1020" text-anchor="middle" class="label">script.sql</text>
+  
+  <!-- Setas de Relacionamento -->
+  <!-- Web -> API -->
+  <line x1="500" y1="280" x2="500" y2="320" class="arrow" />
+  
+  <!-- API -> Application -->
+  <line x1="500" y1="480" x2="500" y2="520" class="arrow" />
+  
+  <!-- Application -> Domain -->
+  <line x1="500" y1="680" x2="500" y2="720" class="arrow" />
+  
+  <!-- Application -> Infrastructure -->
+  <line x1="400" y1="680" x2="400" y2="920" class="arrow" />
+  
+  <!-- Domain -> Infrastructure -->
+  <line x1="600" y1="880" x2="600" y2="920" class="arrow" />
+  
+  <!-- Relacionamentos entre Entidades -->
+  <line x1="280" y1="810" x2="320" y2="810" class="arrow" />
+  <line x1="500" y1="810" x2="540" y2="810" class="arrow" />
+  <line x1="720" y1="810" x2="760" y2="810" class="arrow" />
+  
+  <!-- Legenda -->
+  <rect x="50" y="1100" width="900" height="80" rx="5" ry="5" fill="#f9f9f9" stroke="#999" stroke-width="1" />
+  <text x="500" y="1120" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">Legenda</text>
+  
+  <rect x="100" y="1140" width="20" height="20" class="layer" />
+  <text x="130" y="1155" class="label">Camada</text>
+  
+  <rect x="200" y="1140" width="20" height="20" class="component" />
+  <text x="230" y="1155" class="label">Componente</text>
+  
+  <rect x="300" y="1140" width="20" height="20" class="entity" />
+  <text x="330" y="1155" class="label">Entidade</text>
+  
+  <line x1="400" y1="1150" x2="450" y2="1150" class="arrow" />
+  <text x="480" y="1155" class="label">Relacionamento</text>
+  
+  <text x="650" y="1155" class="note">Arquitetura em Camadas com Clean Architecture</text>
+</svg>
