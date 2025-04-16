@@ -188,24 +188,30 @@ else
 
         try
         {
-            var atualizacaoDTO = new ConsultaAtualizacaoDTO
-            {
-                Id = consultaIdSelecionada,
-                Status = acaoAtual == "cancelar" ? StatusConsulta.Cancelada : StatusConsulta.Recusada,
-                Justificativa = justificativa
-            };
-
-            var endpoint = acaoAtual == "recusar" ? "recusar" : "cancelar";
-            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/{endpoint}", atualizacaoDTO);
+            string endpoint = acaoAtual == "recusar" ? "recusar" : "cancelar";
+            
+            // Enviar apenas a justificativa como string, que é o que o backend espera
+            var response = await Http.PutAsJsonAsync($"api/consultas/{consultaIdSelecionada}/{endpoint}", justificativa);
+            
             if (response.IsSuccessStatusCode)
             {
                 await CarregarConsultas();
-                FecharModal();
             }
+            else
+            {
+                Console.WriteLine($"Erro ao {acaoAtual} consulta. Status: {response.StatusCode}");
+            }
+            
+            // Sempre fechar o modal após a tentativa, independente do resultado
+            mostrarModalJustificativa = false;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Erro ao {acaoAtual} consulta: {ex.Message}");
+            // Fechar o modal mesmo em caso de erro
+            mostrarModalJustificativa = false;
+            StateHasChanged();
         }
     }
 
