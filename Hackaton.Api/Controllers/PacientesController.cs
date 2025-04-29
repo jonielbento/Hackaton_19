@@ -1,6 +1,9 @@
 using Hackaton.Application.DTOs;
 using Hackaton.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hackaton.Api.Controllers
 {
@@ -18,28 +21,52 @@ namespace Hackaton.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PacienteDTO>>> GetAll()
         {
-            var pacientes = await _pacienteService.GetAllAsync();
-            return Ok(pacientes);
+            try
+            {
+                var pacientes = await _pacienteService.GetAllAsync();
+                return Ok(pacientes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar pacientes: {ex.Message}");
+                return StatusCode(500, new { message = "Erro ao buscar pacientes: " + ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PacienteDTO>> GetById(int id)
         {
-            var paciente = await _pacienteService.GetByIdAsync(id);
-            if (paciente == null)
-                return NotFound();
+            try
+            {
+                var paciente = await _pacienteService.GetByIdAsync(id);
+                if (paciente == null)
+                    return NotFound(new { message = $"Paciente com ID {id} não encontrado" });
 
-            return Ok(paciente);
+                return Ok(paciente);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar paciente por ID: {ex.Message}");
+                return StatusCode(500, new { message = "Erro ao buscar paciente: " + ex.Message });
+            }
         }
 
         [HttpGet("cpf/{cpf}")]
         public async Task<ActionResult<PacienteDTO>> GetByCPF(string cpf)
         {
-            var paciente = await _pacienteService.GetByCPFAsync(cpf);
-            if (paciente == null)
-                return NotFound();
+            try
+            {
+                var paciente = await _pacienteService.GetByCPFAsync(cpf);
+                if (paciente == null)
+                    return NotFound(new { message = $"Paciente com CPF {cpf} não encontrado" });
 
-            return Ok(paciente);
+                return Ok(paciente);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar paciente por CPF: {ex.Message}");
+                return StatusCode(500, new { message = "Erro ao buscar paciente: " + ex.Message });
+            }
         }
 
         [HttpPost]
@@ -47,12 +74,15 @@ namespace Hackaton.Api.Controllers
         {
             try
             {
+                Console.WriteLine($"Iniciando cadastro de paciente: {pacienteDTO.Nome}, CPF: {pacienteDTO.CPF}");
                 var paciente = await _pacienteService.CreateAsync(pacienteDTO);
+                Console.WriteLine($"Paciente cadastrado com sucesso! ID: {paciente.Id}");
                 return CreatedAtAction(nameof(GetById), new { id = paciente.Id }, paciente);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                Console.WriteLine($"Erro ao cadastrar paciente: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -60,19 +90,20 @@ namespace Hackaton.Api.Controllers
         public async Task<ActionResult<PacienteDTO>> Update(int id, PacienteDTO pacienteDTO)
         {
             if (id != pacienteDTO.Id)
-                return BadRequest("ID na URL não corresponde ao ID no corpo da requisição");
+                return BadRequest(new { message = "ID na URL não corresponde ao ID no corpo da requisição" });
 
             try
             {
                 var paciente = await _pacienteService.UpdateAsync(id, pacienteDTO);
                 if (paciente == null)
-                    return NotFound();
+                    return NotFound(new { message = $"Paciente com ID {id} não encontrado" });
 
                 return Ok(paciente);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                Console.WriteLine($"Erro ao atualizar paciente: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -83,13 +114,14 @@ namespace Hackaton.Api.Controllers
             {
                 var result = await _pacienteService.DeleteAsync(id);
                 if (!result)
-                    return NotFound();
+                    return NotFound(new { message = $"Paciente com ID {id} não encontrado" });
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                Console.WriteLine($"Erro ao excluir paciente: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 

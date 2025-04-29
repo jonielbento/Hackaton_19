@@ -1,6 +1,7 @@
 using Hackaton.Application.DTOs;
 using Hackaton.Application.Interfaces;
 using Hackaton.Domain.Entities;
+using Hackaton.Domain.Security;
 using Hackaton.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,18 +14,24 @@ namespace Hackaton.Application.Services
     public class MedicoService : IMedicoService
     {
         private readonly HackatonDbContext _context;
+        private readonly HashService _hashService;
 
-        public MedicoService(HackatonDbContext context)
+        public MedicoService(HackatonDbContext context, HashService hashService)
         {
             _context = context;
+            _hashService = hashService;
         }
 
         public async Task<MedicoDTO?> AuthenticateAsync(MedicoLoginDTO loginDTO)
         {
             var medico = await _context.Medicos
-                .FirstOrDefaultAsync(m => m.CRM == loginDTO.CRM && m.Senha == loginDTO.Senha);
+                .FirstOrDefaultAsync(m => m.CRM == loginDTO.CRM);
 
             if (medico == null)
+                return null;
+
+            // Verificar se a senha corresponde
+            if (!_hashService.VerifyPassword(loginDTO.Senha, medico.Senha))
                 return null;
 
             return new MedicoDTO
@@ -48,7 +55,7 @@ namespace Hackaton.Application.Services
             {
                 Nome = medicoDTO.Nome,
                 CRM = medicoDTO.CRM,
-                Senha = medicoDTO.Senha,
+                Senha = _hashService.HashPassword(medicoDTO.Senha),
                 Especialidade = medicoDTO.Especialidade,
                 ValorConsulta = medicoDTO.ValorConsulta
             };
