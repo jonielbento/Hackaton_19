@@ -1,7 +1,6 @@
 using Hackaton.Api.Security;
 using Hackaton.Application.DTOs;
 using Hackaton.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -27,7 +26,6 @@ namespace Hackaton.Api.Controllers
         }
 
         [HttpPost("medico/login")]
-        [Authorize(Roles = "Medico")]
         public async Task<IActionResult> LoginMedico([FromBody] MedicoLoginDTO loginDTO)
         {
             try
@@ -63,7 +61,6 @@ namespace Hackaton.Api.Controllers
         }
 
         [HttpPost("paciente/login")]
-        [Authorize(Roles = "Paciente")]
         public async Task<IActionResult> LoginPaciente([FromBody] PacienteLoginDTO loginDTO)
         {
             try
