@@ -11,6 +11,7 @@ using Hackaton.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,8 +134,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<HackatonDbContext>();
+        db.Database.Migrate(); // Aplica todas as migrações pendentes
+    }
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI();    
 }
 else
 {
@@ -154,5 +160,8 @@ app.UseExceptionHandler();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add health check endpoint
+app.MapGet("/health", () => Results.Ok(new { Status = "Healthy" }));
 
 app.Run();
