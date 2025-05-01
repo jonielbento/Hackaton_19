@@ -1,63 +1,65 @@
-version: '3.8'
-
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hackaton-db
     environment:
-      SA_PASSWORD: "1q2w3e4r@#$"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Developer"
+      - SA_PASSWORD=1q2w3e4r@#$
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Developer
     ports:
       - "1433:1433"
+    networks:
+      - mynw
     volumes:
       - sqlserver_data:/var/opt/mssql
     restart: always
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "1q2w3e4r@#$" -Q "SELECT 1" || exit 1
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "1q2w3e4r@#$", "-C", "-Q", "SELECT 1" ]
       interval: 10s
-      timeout: 3s
+      timeout: 10s
       retries: 10
-      start_period: 10s
+      start_period: 30s
 
   api:
+    image: hackaton.api
+    container_name: hackaton-api
     build:
       context: .
       dockerfile: Dockerfile.api
     ports:
-      - "5000:80"
-      - "5001:443"
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5000
+    networks:
+      - mynw
+    restart: always
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=HackatonDB;User Id=sa;Password=1q2w3e4r@#$;TrustServerCertificate=True;
-    restart: always
     healthcheck:
-      test: curl --fail http://localhost:80/health || exit 1
+      test: ["CMD-SHELL", "curl --fail http://localhost:5000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-
+  
   web:
+    container_name: hackaton-web
     build:
       context: .
       dockerfile: Dockerfile.web
     ports:
-      - "8080:80"
-      - "8081:443"
+      - "5050:80"
     depends_on:
-      - api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - "ApiBaseUrl=http://api"
+      api:
+        condition: service_healthy
+    networks:
+      - mynw
     restart: always
-    healthcheck:
-      test: curl --fail http://localhost:80/health || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   sqlserver_data:
-    driver: local 
+
+networks:
+  mynw:
+    driver: bridge

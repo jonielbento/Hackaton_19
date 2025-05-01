@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hackaton.Infrastructure.Migrations
 {
     [DbContext(typeof(HackatonDbContext))]
-    [Migration("20250403004904_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250501004938_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,10 +106,6 @@ namespace Hackaton.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("Especialidade")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -124,10 +120,6 @@ namespace Hackaton.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Telefone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal>("ValorConsulta")
                         .HasColumnType("decimal(18,2)");

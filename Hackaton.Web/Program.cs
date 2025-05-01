@@ -9,7 +9,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Configura o HttpClient para apontar para a API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:5001/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5000/") });
 
 // Registra os serviços
 builder.Services.AddScoped<AuthService>();

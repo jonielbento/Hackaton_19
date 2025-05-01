@@ -15,6 +15,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hackaton.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hackaton.Tests", "Hackaton.Tests\Hackaton.Tests.csproj", "{7C89A483-2F80-492B-98E6-22D3317CEDDB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens de Solução", "{86D60E58-36C6-42F6-957D-A446E0DC3A43}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		Dockerfile.api = Dockerfile.api
+		Dockerfile.web = Dockerfile.web
+		docker-run.bat = docker-run.bat
+		nginx.conf = nginx.conf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

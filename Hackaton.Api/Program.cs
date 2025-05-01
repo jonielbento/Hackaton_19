@@ -129,26 +129,33 @@ builder.Services.AddCors(options =>
     });
 });
 
+/*builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000); // Isso garante que o Kestrel escute na porta 5000.
+});*/
+
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HackatonDbContext>();
+    db.Database.Migrate(); // Aplica todas as migrações pendentes
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<HackatonDbContext>();
-        db.Database.Migrate(); // Aplica todas as migrações pendentes
-    }
     app.UseSwagger();
-    app.UseSwaggerUI();    
+    app.UseSwaggerUI();  
+    //app.UseHttpsRedirection();
 }
 else
 {
     app.UseExceptionHandler("/error");
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 
 app.UseCors();
 
@@ -162,6 +169,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Add health check endpoint
-app.MapGet("/health", () => Results.Ok(new { Status = "Healthy" }));
+app.UseHealthChecks("/health");
+//app.MapGet("/health", () => Results.Ok(new { Status = "Healthy" }));
 
 app.Run();

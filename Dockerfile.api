@@ -1,9 +1,10 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+RUN apt-get update && apt-get install -y libkrb5-3 && rm -rf /var/lib/apt/lists/*
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Hackaton.Api/Hackaton.Api.csproj", "Hackaton.Api/"]
 COPY ["Hackaton.Application/Hackaton.Application.csproj", "Hackaton.Application/"]
@@ -12,12 +13,17 @@ COPY ["Hackaton.Infrastructure/Hackaton.Infrastructure.csproj", "Hackaton.Infras
 RUN dotnet restore "Hackaton.Api/Hackaton.Api.csproj"
 COPY . .
 WORKDIR "/src/Hackaton.Api"
-RUN dotnet build "Hackaton.Api.csproj" -c Release -o /app/build
+RUN dotnet build "./Hackaton.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Hackaton.Api.csproj" -c Release -o /app/publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Hackaton.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
+
+# ✅ Instala curl na imagem final
+RUN apt-get update && apt-get install -y curl
+
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Hackaton.Api.dll"] 
+ENTRYPOINT ["dotnet", "Hackaton.Api.dll"]
