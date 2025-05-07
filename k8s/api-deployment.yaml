@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackaton-api
+  labels:
+    app: hackaton
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hackaton
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: hackaton
+        tier: backend
+    spec:
+      containers:
+      - name: api
+        image: hackaton.api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: hackaton-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5 

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hackaton-db-service
+  labels:
+    app: hackaton
+    tier: database
+spec:
+  ports:
+  - port: 1433
+    targetPort: 1433
+  selector:
+    app: hackaton
+    tier: database 

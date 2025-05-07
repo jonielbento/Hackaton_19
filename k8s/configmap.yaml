@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hackaton-config
+  labels:
+    app: hackaton
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_HTTP_PORTS: "5000"
+  API_URL: "http://hackaton-api-service:5000" 

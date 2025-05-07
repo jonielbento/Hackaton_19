@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackaton-web
+  labels:
+    app: hackaton
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hackaton
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: hackaton
+        tier: frontend
+    spec:
+      containers:
+      - name: web
+        image: hackaton.web:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config 
