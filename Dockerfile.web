@@ -1,4 +1,4 @@
-# Build da aplicação
+# Etapa 1: Build da aplicação
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -8,7 +8,7 @@ COPY . .
 WORKDIR "/src/Hackaton.Web"
 RUN dotnet publish "Hackaton.Web.csproj" -c Release -o /app/publish
 
-# Imagem para servir arquivos estáticos
+# Etapa 2: Imagem final para servir com NGINX
 FROM nginx:alpine AS final
 WORKDIR /usr/share/nginx/html
 
@@ -18,8 +18,11 @@ RUN rm -rf ./*
 # Copia os arquivos compilados do Blazor WebAssembly
 COPY --from=build /app/publish/wwwroot .
 
-# Remove configuração default do nginx (opcional)
+# Remove configuração padrão
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Adiciona uma configuração customizada para fallback do Blazor
-COPY nginx.conf /etc/nginx/conf.d
+# Copia sua configuração personalizada renomeando para default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# (Opcional) Exibir arquivos da conf.d para depuração
+# RUN ls -la /etc/nginx/conf.d

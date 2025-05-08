@@ -22,6 +22,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 		Dockerfile.web = Dockerfile.web
 		docker-run.bat = docker-run.bat
 		nginx.conf = nginx.conf
+		k8s\api-deployment.yaml = k8s\api-deployment.yaml
+		k8s\api-hpa.yaml = k8s\api-hpa.yaml
+		k8s\api-service.yaml = k8s\api-service.yaml
+		k8s\configmap.yaml = k8s\configmap.yaml
+		k8s\db-deployment.yaml = k8s\db-deployment.yaml
+		k8s\db-pvc.yaml = k8s\db-pvc.yaml
+		k8s\db-service.yaml = k8s\db-service.yaml
+		k8s\ingress.yaml = k8s\ingress.yaml
+		k8s\kustomization.yaml = k8s\kustomization.yaml
+		k8s\namespace.yaml = k8s\namespace.yaml
+		k8s\README.md = k8s\README.md
+		k8s\secret.yaml = k8s\secret.yaml
+		k8s\web-configmap.yaml = k8s\web-configmap.yaml
+		k8s\web-deployment.yaml = k8s\web-deployment.yaml
+		k8s\web-hpa.yaml = k8s\web-hpa.yaml
+		k8s\web-service.yaml = k8s\web-service.yaml
 	EndProjectSection
 EndProject
 Global
