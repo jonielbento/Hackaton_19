@@ -6,6 +6,7 @@ metadata:
     app: hackaton
     tier: database
 spec:
+  type: LoadBalancer
   ports:
   - port: 1433
     targetPort: 1433
