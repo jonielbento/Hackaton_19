@@ -6,7 +6,7 @@ metadata:
     app: hackaton
     tier: backend
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - port: 5000
     targetPort: 5000

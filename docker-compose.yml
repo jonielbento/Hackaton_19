@@ -50,7 +50,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
     ports:
-      - "5050:80"
+      - "5050:5050"
     depends_on:
       api:
         condition: service_healthy

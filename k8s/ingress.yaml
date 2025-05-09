@@ -18,7 +18,7 @@ spec:
           service:
             name: hackaton-web-service
             port:
-              number: 80
+              number: 5050
       - path: /api
         pathType: Prefix
         backend:
