@@ -61,6 +61,29 @@ O backend do projeto Hackaton foi desenvolvido em .NET 8.0, utilizando uma arqui
 - AgendasController: Gestão de agendas
 - TestAuthController: Testes de autenticação
 
+## Modelo de Dados
+
+![Diagrama de Entidade Relacionamento](diagrama%20hackathon.png)
+
+### Descrição do Modelo de Entidade Relacionamento (ER)
+
+O diagrama ER acima apresenta a estrutura do banco de dados do sistema de consultas médicas, composto pelas seguintes entidades:
+
+#### Médicos
+Armazena informações dos médicos cadastrados no sistema, incluindo nome, CRM, senha (hash), especialidade, valor da consulta, email e telefone.
+
+#### Pacientes
+Contém dados dos pacientes que utilizam o sistema, como nome, CPF, email, senha (hash), telefone e data de nascimento.
+
+#### Agendas
+Gerencia os horários disponibilizados pelos médicos para atendimento, relacionando-se com a entidade Médicos.
+
+#### Consultas
+Registra as consultas marcadas, relacionando médicos, pacientes e agendas, além de armazenar informações como data/hora, status e valor.
+
+Este modelo permite o gerenciamento completo do fluxo de agendamento de consultas, desde a disponibilização de horários pelos médicos até a marcação e acompanhamento das consultas pelos pacientes.
+
+
 ## Funcionalidades Principais
 
 ### Autenticação e Autorização
